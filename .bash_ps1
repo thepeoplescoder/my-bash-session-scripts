@@ -1,0 +1,15 @@
+# Set up PS1 prompt
+PS1="${USERNAME_COLOR}\u${PS1_RESET_TERMINAL}"
+PS1="${PS1}${AT_COLOR}@${HOSTNAME_COLOR}\h${PS1_RESET_TERMINAL} "
+PS1="${PS1}${CURRENT_DIRECTORY_COLOR}\w"
+PS1="${BRACKET_COLOR}[${PS1}${BRACKET_COLOR}]"
+
+PS1="${PS1}${PROMPT_COLOR}${PROMPT_TERMINATOR}"
+PS1="${PS1}${PS1_RESET_TERMINAL}"
+
+# Make a bell sound at every prompt for the root user
+if is-root-user; then
+	PS1="${PS1}\\[\\]"
+fi
+
+PS1="${PS1} "

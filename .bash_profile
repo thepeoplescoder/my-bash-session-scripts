@@ -2,12 +2,17 @@
 # ~/.bash_profile
 #
 
+# This is also used by .bashrc
+INITIAL_LOCAL_VARIABLES_FILENAME=".bash_initial_local_variables"
+INITIAL_LOCAL_VARIABLES_DIR=$HOME
+INITIAL_LOCAL_VARIABLES_PATH="$INITIAL_LOCAL_VARIABLES_DIR/$INITIAL_LOCAL_VARIABLES_FILENAME"
+
 # Load our initial local variables if they exist
-if [[ -f ~/.bash_initial_local_variables ]]; then
+if [[ -f "$INITIAL_LOCAL_VARIABLES_PATH" ]]; then
     __add_label_if_logged_in_as__ root
     __say_that_we_are__ "Loading" "initial local variables" "" ""
     echo
-    source ~/.bash_initial_local_variables
+    source $INITIAL_LOCAL_VARIABLES_PATH
     BASH_LOCAL_VARIABLES_LOADED="yes"
 fi
 
