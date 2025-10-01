@@ -5,63 +5,50 @@
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
-# ANSI escape sequences
-FCOLOR_BRIGHT_BLUE=$(tput setaf 12)
-FCOLOR_BRIGHT_CYAN=$(tput setaf 14)
-FCOLOR_BRIGHT_WHITE=$(tput setaf 15)
-FCOLOR_YELLOW=$(tput setaf 226)
-FCOLOR_RED=$(tput setaf 1)
-FCOLOR_BRIGHT_RED=$(tput setaf 9)
-FCOLOR_ORANGE=$(tput setaf 208)
-RESET_TERMINAL=$(tput sgr0)
-
 # Keep track of where we are
 FILE_THAT_SOURCED_BASHRC=$THIS_FILE_NAME
 THIS_FILE_NAME='.bashrc'
 
+# To help clean things up.
+function __bash_sessionstart_notify__() {
+	if [[ "$2" == "" ]]; then
+		x=$THIS_FILE_NAME
+	else
+		x=$2
+	fi
+    __add_label_if_logged_in_as__ root
+	echo -n "$3"
+    __say_that_we_are__ "$1" "$x" "$FCOLOR_BRIGHT_BLUE" "$FCOLOR_YELLOW"
+}
+
+# Get our initial local variables if they exist and haven't been loaded
+if [[ "$BASH_LOCAL_VARIABLES_LOADED" == "" ]]; then
+	if [[ -f ~/.bash_initial_local_variables ]]; then
+		__bash_sessionstart_notify__ "Loading" "initial local variables"; echo
+		source ~/.bash_initial_local_variables
+	fi
+fi
+
+# Load these files if they exist
+[[ -f ~/.bash_functions ]] && source ~/.bash_functions
+[[ -f ~/.bash_aliases   ]] && source ~/.bash_aliases
+
 # Let user know we're in here
-__add_label_if_logged_in_as__ root
-__say_that_we_are__ "Entering" "$THIS_FILE_NAME" "$FCOLOR_BRIGHT_BLUE" "$FCOLOR_YELLOW"
-echo
+__bash_sessionstart_notify__ "Running the rest of"; echo
 
 # Add user's ~/bin if it exists
 [[ -d ~/bin ]] && export PATH="$HOME/bin:$PATH"
-
-# Load these files if they exist
-[[ -f ~/.bash_aliases   ]] && source ~/.bash_aliases
-[[ -f ~/.bash_functions ]] && source ~/.bash_functions
-
-# Location of additional scripts
-BASH_SHELL_SCRIPTS_LOCATION="$HOME/.bash_shell_scripts"
-ADDITIONAL_SCRIPTS_LOCATION="$BASH_SHELL_SCRIPTS_LOCATION/bashrc.d"
 
 # Load any additional scripts if they exist
 if [ -d "$ADDITIONAL_SCRIPTS_LOCATION" ]; then
 	for shellScript in "$ADDITIONAL_SCRIPTS_LOCATION"/*; do
 		if [[ -f "$shellScript" && -r "$shellScript" ]]; then
-			__add_label_if_logged_in_as__ root
-			echo -n "   "
-			__say_that_we_are__ "Loading" "$(basename $shellScript)" "$FCOLOR_BRIGHT_BLUE" "$FCOLOR_YELLOW"
+			__bash_sessionstart_notify__ "Loading" "$(basename $shellScript)" "   "
 			source $shellScript
 			echo " ${FCOLOR_BRIGHT_BLUE}done!${RESET_TERMINAL}"
 		fi
 	done
 	unset shellScript
-fi
-
-# PS1 prompt theme
-BRACKET_COLOR="\\[$FCOLOR_RED\\]"
-USERNAME_COLOR="\\[$FCOLOR_BRIGHT_RED\\]"
-AT_COLOR="\\[$FCOLOR_ORANGE\\]"
-HOSTNAME_COLOR=$USERNAME_COLOR
-CURRENT_DIRECTORY_COLOR="\\[$FCOLOR_YELLOW\\]"
-PROMPT_COLOR=$BRACKET_COLOR
-PS1_RESET_TERMINAL="\\[$RESET_TERMINAL\\]"
-PROMPT_TERMINATOR='$'
-
-# Make username blink if we are logged in as root
-if is-root-user; then
-	USERNAME_COLOR="$USERNAME_COLOR\\[$(tput blink)\\]"
 fi
 
 # Set up PS1 prompt
@@ -76,9 +63,7 @@ fi
 PS1="${PS1} "
 
 # Let user know we're leaving
-__add_label_if_logged_in_as__ root
-__say_that_we_are__ "Leaving" "$THIS_FILE_NAME" "$FCOLOR_BRIGHT_BLUE" "$FCOLOR_YELLOW"
-echo
+__bash_sessionstart_notify__ "Leaving"; echo
 
 # Restore the name of the current file to the script that sourced this one
 THIS_FILE_NAME=$FILE_THAT_SOURCED_BASHRC
