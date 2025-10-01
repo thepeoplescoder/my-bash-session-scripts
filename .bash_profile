@@ -2,7 +2,7 @@
 # ~/.bash_profile
 #
 
-# This is also used by .bashrc
+# This is also used by .bashrc via grep
 INITIAL_LOCAL_VARIABLES_FILENAME=".bash_initial_local_variables"
 INITIAL_LOCAL_VARIABLES_DIR=$HOME
 INITIAL_LOCAL_VARIABLES_PATH="$INITIAL_LOCAL_VARIABLES_DIR/$INITIAL_LOCAL_VARIABLES_FILENAME"
