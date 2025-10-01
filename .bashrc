@@ -23,8 +23,7 @@ function __bash_sessionstart_notify__() {
 
 # Displays an error message on a bad directory declaration
 function __bad_directory_declaration__() {
-	echo "No declaration for \$$1 in"
-	echo "$INITIAL_LOCAL_VARIABLES_PATH"
+	echo "Invalid or no declaration for \$$1 in $INITIAL_LOCAL_VARIABLES_PATH"
 	echo
 	echo "Please point this variable to a folder containing the location of your"
 	echo "$2 scripts."
@@ -41,14 +40,14 @@ if [[ "$BASH_LOCAL_VARIABLES_LOADED" == "" ]]; then
 	# Load the variable declarations from ~/.bash_profile
 	eval "$(grep -E '^INITIAL_LOCAL_VARIABLES_[[:alnum:]_]+=.*' ~/.bash_profile)"
 
-	# As a result, this variable must be decalred, and must point to an actual file.
+	# As a result, this variable must be declared, and must point to an actual file.
 	if [[ ! -f "$INITIAL_LOCAL_VARIABLES_PATH" ]]; then
-		echo "\$INITIAL_LOCAL_VARIABLES_PATH not declared in \~/.bash_profile."
+		echo "\$INITIAL_LOCAL_VARIABLES_PATH not declared in ~/.bash_profile."
 		echo
-		echo "Please this declaration to your \~/.bash_profile, pointing to the"
-		echo "location of the file containing initial local variable declarations."
+		echo "Please put this declaration in your ~/.bash_profile, pointing to the"
+		echo "location of the file containing the initial local variable declarations."
 		echo
-		exit 1
+		return
 	fi
 
 	# Now we can load the variables.
@@ -62,16 +61,16 @@ fi
 # This variable must exist.
 if [[ ! -d "$BASH_SHELL_SCRIPTS_LOCATION" ]]; then
 	__bad_directory_declaration__ "BASH_SHELL_SCRIPTS_LOCATION" "session"
-	exit 1
+	return
 fi
 
 # This variable must exist.
 if [[ ! -d "$ADDITIONAL_SCRIPTS_LOCATION" ]]; then
 	__bad_directory_declaration__ "ADDITIONAL_SCRIPTS_LOCATION" "additional"
-	exit 1
+	return
 fi
 
-# Scripts with conventional names: load them if they exist.
+# Scripts with conventional names: load them *first* if they exist.
 for scriptName in "${CONVENTIONAL_SCRIPTS[@]}"; do
 	shellScript="$BASH_SHELL_SCRIPTS_LOCATION/$scriptName"
 	if [[ -f "$shellScript" && -r "$shellScript" ]]; then
@@ -98,9 +97,9 @@ if [ -d "$ADDITIONAL_SCRIPTS_LOCATION" ]; then
 	unset shellScript
 fi
 
-# Set up PS1 prompt
-if [[ -f "$BASH_SHELL_SCRIPTS_LOCATION/.bash_ps1" ]]; then
-	source "$BASH_SHELL_SCRIPTS_LOCATION/.bash_ps1"
+# Set up terminal prompt
+if [[ -f "$BASH_SHELL_SCRIPTS_LOCATION/.bash_terminal_prompt" ]]; then
+	source "$BASH_SHELL_SCRIPTS_LOCATION/.bash_terminal_prompt"
 fi
 
 # Let user know we're leaving

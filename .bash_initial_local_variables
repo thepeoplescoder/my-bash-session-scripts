@@ -22,8 +22,3 @@ CURRENT_DIRECTORY_COLOR="\\[$FCOLOR_YELLOW\\]"
 PROMPT_COLOR=$BRACKET_COLOR
 PS1_RESET_TERMINAL="\\[$RESET_TERMINAL\\]"
 PROMPT_TERMINATOR='$'
-
-# Make username blink if we are logged in as root
-if is-root-user; then
-	USERNAME_COLOR="$USERNAME_COLOR\\[$(tput blink)\\]"
-fi
