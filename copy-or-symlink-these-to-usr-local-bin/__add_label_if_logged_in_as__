@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+if [ "$USER" == "$1" ]; then
+	echo -n "($1) "
+fi

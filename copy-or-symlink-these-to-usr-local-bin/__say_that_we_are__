@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+Action=$1
+TheFileName=$2
+NormalColor=$3
+HighlightColor=$4
+echo -ne "${NormalColor}${Action} "
+echo -ne "${HighlightColor}${TheFileName} "
+echo -ne "${NormalColor}. . ."
+echo -ne "\033[0m"
