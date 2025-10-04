@@ -1,7 +1,8 @@
 # Location of scripts
-BASH_SHELL_SCRIPTS_LOCATION="$HOME/.bash_shell_scripts"
-ADDITIONAL_SCRIPTS_LOCATION="$BASH_SHELL_SCRIPTS_LOCATION/bashrc.d"
+BASH_SESSION_SCRIPTS_HOME="$HOME/.bash_session_scripts"
+ADDITIONAL_SCRIPTS_DIRECTORY="bashrc.d"
 CONVENTIONAL_SCRIPTS=(".bash_functions" ".bash_aliases")
+ENDING_SCRIPTS=(".bash_terminal_prompt")
 
 # ANSI escape sequences
 FCOLOR_BRIGHT_BLUE=$(tput setaf 12)

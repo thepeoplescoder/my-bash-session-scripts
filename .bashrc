@@ -9,6 +9,10 @@
 FILE_THAT_SOURCED_BASHRC=$THIS_FILE_NAME
 THIS_FILE_NAME='.bashrc'
 
+# Add user's ~/bin to PATH if it exists
+USERS_BIN="$HOME/bin"
+[[ -d "$USERS_BIN" ]] && export PATH="$USERS_BIN:$PATH"
+
 # To help clean things up.
 function __bash_sessionstart_notify__() {
 	if [[ "$2" == "" ]]; then
@@ -16,17 +20,29 @@ function __bash_sessionstart_notify__() {
 	else
 		x=$2
 	fi
-    __add_label_if_logged_in_as__ root
+    __add_username_label_if_logged_in_as__ root
 	echo -n "$3"
     __say_that_we_are__ "$1" "$x" "$FCOLOR_BRIGHT_BLUE" "$FCOLOR_YELLOW"
 }
 
+function __say__() {
+	__add_username_label_if_logged_in_as__ root
+	echo -n "$2"
+	echo -n "$1"
+}
+
+function command_exists() {
+	command -v "$@" &> /dev/null
+}
+
 # Displays an error message on a bad directory declaration
 function __bad_directory_declaration__() {
-	echo "Invalid or no declaration for \$$1 in $INITIAL_LOCAL_VARIABLES_PATH"
+	echo "In $THIS_FILE_NAME:"
 	echo
-	echo "Please point this variable to a folder containing the location of your"
-	echo "$2 scripts."
+	echo "   Invalid or no declaration for \$$1 in $INITIAL_LOCAL_VARIABLES_PATH"
+	echo
+	echo "   Please point this variable to a folder containing the location of your"
+	echo "   $2 scripts."
 	echo
 }
 
@@ -38,55 +54,50 @@ function __bad_directory_declaration__() {
 if [[ "$BASH_LOCAL_VARIABLES_LOADED" == "" ]]; then
 
 	# Load the variable declarations from ~/.bash_profile
-	eval "$(grep -E '^INITIAL_LOCAL_VARIABLES_[[:alnum:]_]+=.*' ~/.bash_profile)"
+	sourceFile=~/.bash_profile
+	eval "$(grep -E '^INITIAL_LOCAL_VARIABLES_[[:alnum:]_]+=.*' $sourceFile)"
 
 	# As a result, this variable must be declared, and must point to an actual file.
 	if [[ ! -f "$INITIAL_LOCAL_VARIABLES_PATH" ]]; then
-		echo "\$INITIAL_LOCAL_VARIABLES_PATH not declared in ~/.bash_profile."
+		echo "In $THIS_FILE_NAME:"
 		echo
-		echo "Please put this declaration in your ~/.bash_profile, pointing to the"
-		echo "location of the file containing the initial local variable declarations."
+		echo "   \$INITIAL_LOCAL_VARIABLES_PATH not declared in $sourceFile."
+		echo
+		echo "   Please put this declaration in $sourceFile, pointing to the"
+		echo "   location of the file containing the initial local variable declarations."
 		echo
 		return
 	fi
 
 	# Now we can load the variables.
-	__bash_sessionstart_notify__ "Loading" "initial local variables"; echo
+	__bash_sessionstart_notify__ "Loading initial local variables from" "$THIS_FILE_NAME"; echo
 	source $INITIAL_LOCAL_VARIABLES_PATH
 
 	# Variables finally loaded.
 	BASH_LOCAL_VARIABLES_LOADED="yes"
 fi
 
-# This variable must exist.
-if [[ ! -d "$BASH_SHELL_SCRIPTS_LOCATION" ]]; then
-	__bad_directory_declaration__ "BASH_SHELL_SCRIPTS_LOCATION" "session"
-	return
-fi
-
-# This variable must exist.
-if [[ ! -d "$ADDITIONAL_SCRIPTS_LOCATION" ]]; then
-	__bad_directory_declaration__ "ADDITIONAL_SCRIPTS_LOCATION" "additional"
+# This variable must exist, and point to a directory.
+if [[ ! -d "$BASH_SESSION_SCRIPTS_HOME" ]]; then
+	__bad_directory_declaration__ "BASH_SESSION_SCRIPTS_HOME" "session"
 	return
 fi
 
 # Scripts with conventional names: load them *first* if they exist.
 for scriptName in "${CONVENTIONAL_SCRIPTS[@]}"; do
-	shellScript="$BASH_SHELL_SCRIPTS_LOCATION/$scriptName"
+	shellScript="$BASH_SESSION_SCRIPTS_HOME/$scriptName"
 	if [[ -f "$shellScript" && -r "$shellScript" ]]; then
 		source $shellScript
 	fi
 	unset shellScript
 done
 
-# Let user know we're in here
+# Keep user posted on what we're doing
 __bash_sessionstart_notify__ "Running the rest of"; echo
 
-# Add user's ~/bin if it exists
-[[ -d ~/bin ]] && export PATH="$HOME/bin:$PATH"
-
 # Load any additional scripts if they exist
-if [ -d "$ADDITIONAL_SCRIPTS_LOCATION" ]; then
+ADDITIONAL_SCRIPTS_LOCATION="$BASH_SESSION_SCRIPTS_HOME/$ADDITIONAL_SCRIPTS_DIRECTORY"
+if [[ -d "$ADDITIONAL_SCRIPTS_LOCATION" ]]; then
 	for shellScript in "$ADDITIONAL_SCRIPTS_LOCATION"/*; do
 		if [[ -f "$shellScript" && -r "$shellScript" ]]; then
 			__bash_sessionstart_notify__ "Loading" "$(basename $shellScript)" "   "
@@ -97,10 +108,14 @@ if [ -d "$ADDITIONAL_SCRIPTS_LOCATION" ]; then
 	unset shellScript
 fi
 
-# Set up terminal prompt
-if [[ -f "$BASH_SHELL_SCRIPTS_LOCATION/.bash_terminal_prompt" ]]; then
-	source "$BASH_SHELL_SCRIPTS_LOCATION/.bash_terminal_prompt"
-fi
+# Load ending scripts
+for scriptName in "${ENDING_SCRIPTS[@]}"; do
+	shellScript="$BASH_SESSION_SCRIPTS_HOME/$scriptName"
+	if [[ -f "$shellScript" && -r "$shellScript" ]]; then
+		source $shellScript
+	fi
+	unset shellScript
+done
 
 # Let user know we're leaving
 __bash_sessionstart_notify__ "Leaving"; echo

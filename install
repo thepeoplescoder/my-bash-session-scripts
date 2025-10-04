@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+
+function main() {
+	leave_if_any_directory_in_the_list_is_not_found
+	leave_if_any_file_in_the_list_is_not_found
+
+	if user_wants_to_install; then
+		destructively_symlink_required_files_to_users_home_directory
+		make_dir_for_additional_scripts_in_case_repo_dir_is_not_in_users_home
+		copy_helper_scripts_to_usr_local_bin
+		display_success_and_exit
+	fi
+
+	echo "Installation cancelled."
+}
+
+function leave_if_any_directory_in_the_list_is_not_found() {
+	for dir in "${DIRECTORY_LIST[@]}"; do
+		if [ ! -d "$dir" ]; then
+			echo "$dir not found or not a directory."; echo
+			tell_user_to_run_script_in_repo_directory_and_exit
+		fi
+	done
+}
+
+function leave_if_any_file_in_the_list_is_not_found() {
+	for file in "${FILE_LIST[@]}"; do
+		if [[ ! -f "$file" || ! -r "$file" ]]; then
+			echo "$file not found or not readable."; echo
+			tell_user_to_run_script_in_repo_directory_and_exit
+		fi
+	done
+}
+
+function user_wants_to_install() {
+	true
+}
+
+function tell_user_to_run_script_in_repo_directory_and_exit() {
+	echo "Please run this script in the directory that the repository was cloned from."
+	exit 1
+}
+
+function destructively_symlink_required_files_to_users_home_directory() {
+	repoDir="$PWD"
+	cd "$HOME"
+	for file in "${FILES_TO_SYMLINK[@]}"; do
+		destructively_remove_old_symlink_and_make_new_one_using "$repoDir/$file"
+	done
+	cd "$repoDir"
+}
+
+function make_dir_for_additional_scripts_in_case_repo_dir_is_not_in_users_home() {
+	mkdir -p "$HOME/$(basename $PWD)/bashrc.d"
+}
+
+function copy_helper_scripts_to_usr_local_bin() {
+	sudo cp copy-or-symlink-these-to-usr-local-bin/* /usr/local/bin
+}
+
+
+function destructively_remove_old_symlink_and_make_new_one_using() {
+	intendedRelativePath="$(realpath --relative-to="$PWD" "$1")"
+	rm "$(basename "$1")" 2> /dev/null
+	ln -s "$intendedRelativePath"
+}
+
+function display_success_and_exit() {
+	echo "Success!  Restart your terminal."
+	exit 0
+}
+
+FILE_LIST=(".bash_aliases" \
+           ".bash_functions" \
+		   ".bash_initial_local_variables" \
+		   ".bash_logout" \
+		   ".bash_profile" \
+		   ".bash_terminal_prompt" \
+		   ".bashrc" \
+		   "install" \
+		   "README" \
+		   )
+
+FILES_TO_SYMLINK=(".bash_profile" ".bashrc" ".bash_logout" ".bash_initial_local_variables")
+
+DIRECTORY_LIST=("bashrc.d" "copy-or-symlink-these-to-usr-local-bin")
+
+main "$@"

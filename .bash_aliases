@@ -14,15 +14,19 @@ alias ls='LC_COLLATE=C ls --group-directories-first --color=auto'
 alias grep='grep --color=auto'
 alias sudo='sudo '
 alias ip='ip -color=auto'
-alias pacman='pacman --color=auto'
 alias diff='diff --color=auto'
 alias mvv='mv -v'
 alias cpv='cp -v'
 alias cd..='cd ..'
 
-# Disable rustup for root user
-if is-root-user; then
-	alias rustup='echo "Please run this command from user $(id -nu 1000)."'
+if command_exists 'pacman'; then
+	alias pacman='pacman --color=auto '
+elif command_exists 'apt'; then
+	echo "Found apt."
+	alias apt-get='apt'
+	if ! command_exists 'nala'; then
+		echo "Consider installing nala!"
+	fi
 fi
 
 # Let user know we're leaving
@@ -30,4 +34,3 @@ __bash_sessionstart_notify__ "Leaving"; echo
 
 # Restore the name to the script that sourced this one
 THIS_FILE_NAME=$FILE_THAT_SOURCED_BASH_ALIASES
-
