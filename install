@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 function main() {
+	retval=false
+
 	leave_if_any_directory_in_the_list_is_not_found
 	leave_if_any_file_in_the_list_is_not_found
 
@@ -10,17 +12,17 @@ function main() {
 			make_dir_for_additional_scripts_in_case_repo_dir_is_not_in_users_home
 			if copy_helper_scripts_to_usr_local_bin; then
 				display_success
-				return 0
+				retval=true
 			fi
 		else
 			log_echo "Installation cancelled."; echo
-			echo
 		fi
 	else
-		error_echo "The parent directory of this directory must be your home directory."
+		error_echo "The parent directory of this directory must be your home directory."; echo
 	fi
+	echo
 
-	return 1
+	$retval
 }
 
 function the_parent_directory_is_also_the_users_home_directory() {
