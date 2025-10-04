@@ -129,7 +129,7 @@ function copy_helper_scripts_to_usr_local_bin_succeeded() {
 	log_to_console "Helper scripts will now be copied to" \
 	               "/usr/local/bin" ".  sudo authentication is required."; echo
 	if sudo true; then
-		sudo cp --verbose copy-or-symlink-these-to-usr-local-bin/* /usr/local/bin/ \
+		sudo cp --verbose copy-these-to-usr-local-bin/* /usr/local/bin/ \
 			| colorize_cp_or_ln
 		echo
 	else
@@ -180,6 +180,6 @@ FILE_LIST=(".bash_aliases" \
 
 FILES_TO_SYMLINK=(".bash_profile" ".bashrc" ".bash_logout" ".bash_initial_local_variables")
 
-DIRECTORY_LIST=("bashrc.d" "copy-or-symlink-these-to-usr-local-bin")
+DIRECTORY_LIST=("bashrc.d" "copy-these-to-usr-local-bin")
 
 main "$@"
