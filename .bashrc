@@ -74,15 +74,8 @@ fi
 # We now genuinely care that BASH_SESSION_SCRIPTS_HOME *must* point to a directory.
 # Use the same directory checking code in ~/.bash_profile.
 eval "$(awk '
-	/# BASH_SESSION_SCRIPTS_HOME_directoryCheck_start/ {
-		f=1
-		next
-	}
-	
-	/# BASH_SESSION_SCRIPTS_HOME_directoryCheck_end/ {
-		f=0
-	}
-	
+	/# BASH_SESSION_SCRIPTS_HOME_directoryCheck_start/ {f=1; next}
+	/# BASH_SESSION_SCRIPTS_HOME_directoryCheck_end/   {f=0}
 	f
 ' $dataSource)"
 

@@ -4,6 +4,10 @@ function main() {
     local oldWorkingDirectory="$PWD"
     local retval=false
 
+    # echo "$0"
+    # echo "${BASH_SOURCE[0]}"
+    # exit
+
     exit_if_this_repository_is_not_directly_in_users_home
 
     change_working_directory_to "$(get_repo_directory)"
@@ -34,9 +38,9 @@ function do_the_install() {
 }
 
 function exit_if_this_repository_is_not_directly_in_users_home() {
-    local fullPathToThisScript="$(realpath "${BASH_SOURCE[0]}")"
+    local pathToThisScript="$(get_path_to_this_script_without_expanding_symlinks)"
 
-    local scriptDirname="$(dirname "$fullPathToThisScript")"
+    local scriptDirname="$(dirname "$pathToThisScript")"
     local requiredBasename="${DIRECTORY_LIST[2]}"
 
     if [[ "$(basename "$scriptDirname")" != "$requiredBasename" ]]; then
@@ -54,9 +58,18 @@ function exit_if_this_repository_is_not_directly_in_users_home() {
     fi
 }
 
+function get_path_to_this_script_without_expanding_symlinks() {
+    local thisScript="${BASH_SOURCE[0]}"
+    local thisScriptDir="$(dirname "$thisScript")"
+    local pathToThisScript="$(
+        cd "$thisScriptDir" || exit
+        pwd
+    )/$(basename "$thisScript")"
+    echo "$pathToThisScript"
+}
+
 function get_repo_directory() {
-    local d="${BASH_SOURCE[0]}"
-    d="$(realpath "$d")"
+    local d="$(get_path_to_this_script_without_expanding_symlinks)"
     d="$(dirname "$d")"             # install-scripts
     dirname "$d"                    # repo directory
 }
@@ -151,7 +164,10 @@ function destructively_symlink_required_files_to_users_home_directory() {
 }
 
 function change_working_directory_to() {
-    local d="$(realpath "$1")"
+    local d="$(
+        cd "$1" || exit
+        pwd
+    )"
     cd "$d"
     log_to_console_ex 12 14 "Current working directory is now" "$d" "."; echo
     echo
@@ -201,8 +217,12 @@ function make_dir_for_additional_scripts_in_case_repo_dir_is_not_in_users_home()
 }
 
 function copy_helper_scripts_to_usr_local_bin() {
+    local sudoNotification=".  sudo authentication is required."
+    if [[ $EUID -eq 0 ]]; then
+        sudoNotification='.'
+    fi
     log_to_console "Helper scripts will now be copied to" \
-                    "/usr/local/bin" ".  sudo authentication is required."; echo
+                    "/usr/local/bin" "$sudoNotification"; echo
     if sudo true; then
         sudo cp --verbose copy-these-to-usr-local-bin/* /usr/local/bin/ \
             | colorize_cp_or_ln
