@@ -2,21 +2,45 @@
 # ~/.bashrc
 #
 
+###############
+##           ##
+##   Entry   ##
+##           ##
+###############
+
+dotBashProfile=~/.bash_profile
+dataSource=$dotBashProfile
+
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
-# Keep track of where we are
-FILE_THAT_SOURCED_BASHRC=$THIS_FILE_NAME
-THIS_FILE_NAME='.bashrc'
+# Create the sourced file stack if it hasn't been created
+eval "$(awk '
+	/# BASH_PROFILE_createStack_start/ {f=1; next}
+	/# BASH_PROFILE_createStack_end/   {f=0}
+	f
+' $dataSource)"
 
-# Add user's ~/bin to PATH if it exists
-USERS_BIN="$HOME/bin"
-[[ -d "$USERS_BIN" ]] && export PATH="$USERS_BIN:$PATH"
+# Create the color stack if it hasn't been created
+eval "$(awk '
+	/# BASH_PROFILE_colorStack_start/ {f=1; next}
+	/# BASH_PROFILE_colorStack_end/   {f=0}
+	f
+' $dataSource)"
+
+# Keep track of where we are.
+__enter_this_file__
+
+##########################
+##                      ##
+##   Helper Functions   ##
+##                      ##
+##########################
 
 # To help clean things up.
 function __bash_sessionstart_notify__() {
 	if [[ "$2" == "" ]]; then
-		x=$THIS_FILE_NAME
+		x="$(__this_file_name__)"
 	else
 		x=$2
 	fi
@@ -35,16 +59,36 @@ function command_exists() {
 	command -v "$@" &> /dev/null
 }
 
-# Displays an error message on a bad directory declaration
-function __bad_directory_declaration__() {
-	echo "In $THIS_FILE_NAME:"
-	echo
-	echo "   Invalid or no declaration for \$$1 in $INITIAL_LOCAL_VARIABLES_PATH"
-	echo
-	echo "   Please point this variable to a folder containing the location of your"
-	echo "   $2 scripts."
-	echo
-}
+####################################
+##                                ##
+##   Load Initial Configuration   ##
+##                                ##
+####################################
+
+# Make sure we have the location of our scripts before doing ANYTHING.
+if [[ "$BASH_SESSION_SCRIPTS_HOME" == "" ]]; then
+	eval "$(grep -E '^BASH_SESSION_SCRIPTS_HOME_FILE=.*' $dataSource | head -n 1)"
+	BASH_SESSION_SCRIPTS_HOME=$(cat "$BASH_SESSION_SCRIPTS_HOME_FILE")
+fi
+
+# We now genuinely care that BASH_SESSION_SCRIPTS_HOME *must* point to a directory.
+# Use the same directory checking code in ~/.bash_profile.
+eval "$(awk '
+	/# BASH_SESSION_SCRIPTS_HOME_directoryCheck_start/ {
+		f=1
+		next
+	}
+	
+	/# BASH_SESSION_SCRIPTS_HOME_directoryCheck_end/ {
+		f=0
+	}
+	
+	f
+' $dataSource)"
+
+# Add user's ~/bin to PATH if it exists
+USERS_BIN="$HOME/bin"
+[[ -d "$USERS_BIN" ]] && export PATH="$USERS_BIN:$PATH"
 
 # Get the location of the initial local variables if they haven't been loaded.
 # This is defined in ~/.bash_profile in the lines looking like:
@@ -59,7 +103,7 @@ if [[ "$BASH_LOCAL_VARIABLES_LOADED" == "" ]]; then
 
 	# As a result, this variable must be declared, and must point to an actual file.
 	if [[ ! -f "$INITIAL_LOCAL_VARIABLES_PATH" ]]; then
-		echo "In $THIS_FILE_NAME:"
+		echo "In $(__this_file_name__):"
 		echo
 		echo "   \$INITIAL_LOCAL_VARIABLES_PATH not declared in $sourceFile."
 		echo
@@ -70,27 +114,30 @@ if [[ "$BASH_LOCAL_VARIABLES_LOADED" == "" ]]; then
 	fi
 
 	# Now we can load the variables.
-	__bash_sessionstart_notify__ "Loading initial local variables from" "$THIS_FILE_NAME"; echo
+	__bash_sessionstart_notify__ "Loading initial local variables from" "$(__this_file_name__)"; echo
 	source $INITIAL_LOCAL_VARIABLES_PATH
-
-	# Variables finally loaded.
-	BASH_LOCAL_VARIABLES_LOADED="yes"
 fi
 
-# This variable must exist, and point to a directory.
-if [[ ! -d "$BASH_SESSION_SCRIPTS_HOME" ]]; then
-	__bad_directory_declaration__ "BASH_SESSION_SCRIPTS_HOME" "session"
-	return
-fi
+##########################
+##                      ##
+##   Starting Scripts   ##
+##                      ##
+##########################
 
-# Scripts with conventional names: load them *first* if they exist.
-for scriptName in "${CONVENTIONAL_SCRIPTS[@]}"; do
+# Load starting scripts if they exist
+for scriptName in "${STARTING_SCRIPTS[@]}"; do
 	shellScript="$BASH_SESSION_SCRIPTS_HOME/$scriptName"
 	if [[ -f "$shellScript" && -r "$shellScript" ]]; then
 		source $shellScript
 	fi
 	unset shellScript
 done
+
+############################
+##                        ##
+##   Additional Scripts   ##
+##                        ##
+############################
 
 # Keep user posted on what we're doing
 __bash_sessionstart_notify__ "Running the rest of"; echo
@@ -108,6 +155,12 @@ if [[ -d "$ADDITIONAL_SCRIPTS_LOCATION" ]]; then
 	unset shellScript
 fi
 
+########################
+##                    ##
+##   Ending Scripts   ##
+##                    ##
+########################
+
 # Load ending scripts
 for scriptName in "${ENDING_SCRIPTS[@]}"; do
 	shellScript="$BASH_SESSION_SCRIPTS_HOME/$scriptName"
@@ -117,8 +170,19 @@ for scriptName in "${ENDING_SCRIPTS[@]}"; do
 	unset shellScript
 done
 
+##############
+##          ##
+##   Exit   ##
+##          ##
+##############
+
 # Let user know we're leaving
 __bash_sessionstart_notify__ "Leaving"; echo
 
+# Blank line to keep things somewhat pretty
+[[ "${BASH_SOURCE[1]}" == "" ]] && echo
+
+# Expose this
+
 # Restore the name of the current file to the script that sourced this one
-THIS_FILE_NAME=$FILE_THAT_SOURCED_BASHRC
+__leave_this_file__

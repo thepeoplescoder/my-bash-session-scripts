@@ -1,10 +1,9 @@
 #
-# ~/.bash_aliases
+# Use this file instead of ~/.bash_aliases
 #
 
 # Keep track of where we are
-FILE_THAT_SOURCED_BASH_ALIASES=$THIS_FILE_NAME
-THIS_FILE_NAME='.bash_aliases'
+__enter_this_file__
 
 # Let user know we're in here
 __bash_sessionstart_notify__ "Entering"; echo
@@ -32,5 +31,5 @@ fi
 # Let user know we're leaving
 __bash_sessionstart_notify__ "Leaving"; echo
 
-# Restore the name to the script that sourced this one
-THIS_FILE_NAME=$FILE_THAT_SOURCED_BASH_ALIASES
+# Restore the name of the current file to the script that sourced this one
+__leave_this_file__

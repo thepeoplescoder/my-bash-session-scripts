@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+function main() {
+    delete_conventional_scripts
+    rm_noerr ~/.bash_session_scripts_home
+}
+
+function delete_conventional_scripts() {
+    rm_noerr ~/.bashrc
+    rm_noerr ~/.bash_logout
+    rm_noerr ~/.bash_profile
+}
+
+function rm_noerr() {
+    rm "$@" 2> /dev/null
+}
+
+main
