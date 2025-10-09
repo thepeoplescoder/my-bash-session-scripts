@@ -5,6 +5,11 @@
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
+# Set a PATH for interactive shell if one does not exist.
+export PATH
+if [[ "$PATH" == "" ]]; then
+	PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"
+fi
 
 ############################################
 ##                                        ##
@@ -60,7 +65,7 @@ fi
 
 msgPrefix=''
 if ! is_bashrc_sourced_by_dot_bash_profile; then
-	msgPrefix="Bootstrapping from ~/.bash_profile complete."$'\n'
+	msgPrefix="Bootstrapping from $(__theme__ highlight)~/.bash_profile$(__theme__ normal) complete."$'\n'
 fi
 
 # Load starting scripts if they exist (namely functions and aliases)
@@ -72,10 +77,10 @@ for scriptName in "${STARTING_SCRIPTS[@]}"; do
 	unset shellScript
 done
 unset scriptName
-msgPrefix="${msgPrefix}Starting scripts loaded."$'\n'
+msgPrefix="${msgPrefix}$(__ansi__ reset)$(__add_username_label_if_logged_in_as__ root)$(__theme__ normal)Starting scripts loaded."$'\n'
 
 # We can now do this
-__bash_sessionstart_notify__ "${msgPrefix}Running the rest of"; echo
+__bash_sessionstart_notify__ "${msgPrefix}$(__ansi__ reset)$(__add_username_label_if_logged_in_as__ root)$(__theme__ normal)Running the rest of"; echo
 prepend_to_PATH_if_it_exists ~/bin
 
 unset msgPrefix
