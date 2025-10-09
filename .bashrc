@@ -19,7 +19,7 @@ function is_bashrc_sourced_by_dot_bash_profile() {
 
 # Bootstrap some functionality if we weren't sourced by .bash_profile
 if ! is_bashrc_sourced_by_dot_bash_profile; then
-	dotBashProfile="$(cat ~/.bashProfile)"
+	dotBashProfile="$(cat ~/.bash_profile)"
 
 	function __load_section__() {
 		local section=$1
