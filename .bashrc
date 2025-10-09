@@ -34,12 +34,6 @@ if ! is_bashrc_sourced_by_dot_bash_profile; then
 	eval "$(echo "$dotBashProfile" | __load_section__ sourced-file-stack)"
 	eval "$(echo "$dotBashProfile" | __load_section__ colors)"
 	eval "$(echo "$dotBashProfile" | __load_section__ indented-echo)"
-	eval "$(echo "$dotBashProfile" | __load_section__ BASH_SESSION_SCRIPTS_HOME)"
-	eval "$(echo "$dotBashProfile" | __load_section__ BASH_SESSION_SCRIPTS_HOME-directory-check)"
-	eval "$(echo "$dotBashProfile" | __load_section__ initial-local-variables)"
-
-	unset -f __load_section__
-	unset dotBashProfile
 fi
 
 # unset_on_exit should now be defined at this point.
@@ -53,6 +47,16 @@ unset_on_exit is_bashrc_sourced_by_dot_bash_profile
 
 # Keep track of where we are
 __enter_this_file__
+
+# These must be done *after* __enter_this_file__ is called.
+if ! is_bashrc_sourced_by_dot_bash_profile; then
+	eval "$(echo "$dotBashProfile" | __load_section__ BASH_SESSION_SCRIPTS_HOME)"
+	eval "$(echo "$dotBashProfile" | __load_section__ BASH_SESSION_SCRIPTS_HOME-directory-check)"
+	eval "$(echo "$dotBashProfile" | __load_section__ initial-local-variables)"
+
+	unset -f __load_section__
+	unset dotBashProfile
+fi
 
 msgPrefix=''
 if ! is_bashrc_sourced_by_dot_bash_profile; then
