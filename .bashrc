@@ -6,9 +6,8 @@
 [[ $- != *i* ]] && return
 
 # Set a PATH for interactive shell if one does not exist.
-export PATH
-if [[ "$PATH" == "" ]]; then
-	PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"
+if [[ "$(echo $PATH)" == "" ]]; then
+	export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"
 fi
 
 ############################################
