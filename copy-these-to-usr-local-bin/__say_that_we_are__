@@ -1,9 +1,26 @@
 #!/usr/bin/env bash
+
+if ! command -v __theme__ &> /dev/null || ! command -v iecho &> /dev/null; then
+    echo "__theme__ or iecho functions unavailable."
+    exit 1
+fi
+
 Action=$1
 TheThing=$2
-NormalColor=$3
-HighlightColor=$4
-echo -ne "${NormalColor}${Action} "
-echo -ne "${HighlightColor}${TheThing} "
-echo -ne "${NormalColor}. . ."
-echo -ne "\033[0m"
+
+if [[ "$3" == "" ]]; then
+    NormalColor=$(__theme__ normal)
+else
+    NormalColor=$3
+fi
+
+if [[ "$4" == "" ]]; then
+    HighlightColor=$(__theme__ highlight)
+else
+    HighlightColor=$4
+fi
+
+iecho -ne "${NormalColor}${Action} "
+echo  -ne "${HighlightColor}${TheThing} "
+echo  -ne "${NormalColor}. . ."
+echo  -ne "\033[0m"

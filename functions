@@ -2,19 +2,53 @@
 # Use this file instead of ~/.bash_functions
 #
 
+###########
+## Entry ##
+###########
+
 # Keep track of where we are
 __enter_this_file__
 
 # Let user know we're in here
-# __add_label_if_logged_in_as__ root
-# __say_that_we_are__ "Entering" "$THIS_FILE_NAME" "$FCOLOR_BRIGHT_BLUE" "$FCOLOR_YELLOW"
-# echo
+unset_on_exit __bash_sessionstart_notify__
+function __bash_sessionstart_notify__() {
+	if [[ "$2" == "" ]]; then
+		x="$(__this_file_name__)"
+	else
+		x=$2
+	fi
+    __add_username_label_if_logged_in_as__ root
+	echo -n "$3"
+    __say_that_we_are__ "$1" "$x" "$(__theme__ normal)" "$(__theme__ highlight)"
+}
 __bash_sessionstart_notify__ "Entering"; echo
 
+###############
+## Functions ##
+###############
+
+unset_on_exit __say__
+function __say__() {
+	__add_username_label_if_logged_in_as__ root
+	echo -n "$2"
+	echo -n "$1"
+}
+
+unset_on_exit command_exists
+function command_exists() {
+	command -v "$@" &> /dev/null
+}
+
+unset_on_exit prepend_to_PATH_if_it_exists
+function prepend_to_PATH_if_it_exists() {
+	[[ -d "$1" ]] && export PATH="$1:$PATH"
+}
+
+##########
+## Exit ##
+##########
+
 # Let user know we're leaving
-# __add_label_if_logged_in_as__ root
-# __say_that_we_are__ "Leaving" "$THIS_FILE_NAME" "$FCOLOR_BRIGHT_BLUE" "$FCOLOR_YELLOW"
-# echo
 __bash_sessionstart_notify__ "Leaving"; echo
 
 # Restore the name of the current file to the script that sourced this one

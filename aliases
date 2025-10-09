@@ -18,15 +18,24 @@ alias mvv='mv -v'
 alias cpv='cp -v'
 alias cd..='cd ..'
 
+_push_indent
+
+__theme__ highlight
 if command_exists 'pacman'; then
 	alias pacman='pacman --color=auto '
+	iecho -n "pacman "
+	echo     "$(__theme__ normal)detected."
 elif command_exists 'apt'; then
-	echo "Found apt."
 	alias apt-get='apt'
+	iecho -n "apt "
+	echo     "$(__theme__ normal)detected."
 	if ! command_exists 'nala'; then
-		echo "Consider installing nala!"
+		iecho "Consider installing nala!"
 	fi
 fi
+__ansi__ reset
+
+_pop_indent
 
 # Let user know we're leaving
 __bash_sessionstart_notify__ "Leaving"; echo

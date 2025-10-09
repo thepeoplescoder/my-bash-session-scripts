@@ -2,122 +2,64 @@
 # ~/.bashrc
 #
 
-###############
-##           ##
-##   Entry   ##
-##           ##
-###############
-
-dotBashProfile=~/.bash_profile
-dataSource=$dotBashProfile
-
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
-# Create the sourced file stack if it hasn't been created
-eval "$(awk '
-	/# BASH_PROFILE_createStack_start/ {f=1; next}
-	/# BASH_PROFILE_createStack_end/   {f=0}
-	f
-' $dataSource)"
 
-# Create the color stack if it hasn't been created
-eval "$(awk '
-	/# BASH_PROFILE_colorStack_start/ {f=1; next}
-	/# BASH_PROFILE_colorStack_end/   {f=0}
-	f
-' $dataSource)"
+############################################
+##                                        ##
+##   Bootstrapping from ~/.bash_profile   ##
+##                                        ##
+############################################
 
-# Keep track of where we are.
+# Checks to see if we were sourced by .bash_profile
+function is_bashrc_sourced_by_dot_bash_profile() {
+	[[ "${#BASH_SOURCE[@]}" -ge 2 ]] && [[ "${BASH_SOURCE[2]}" == *"/.bash_profile" ]]
+}
+
+# Bootstrap some functionality if we weren't sourced by .bash_profile
+if ! is_bashrc_sourced_by_dot_bash_profile; then
+	dotBashProfile="$(cat ~/.bashProfile)"
+
+	function __load_section__() {
+		local section=$1
+		awk "
+			/# !BEGIN_SECTION $section/ {f=1; next}
+			/# !END_SECTION $section/   {f=0}
+			f == 1 {print \$0}
+		"
+	}
+
+	eval "$(echo "$dotBashProfile" | __load_section__ cleanup)"
+	eval "$(echo "$dotBashProfile" | __load_section__ sourced-file-stack)"
+	eval "$(echo "$dotBashProfile" | __load_section__ colors)"
+	eval "$(echo "$dotBashProfile" | __load_section__ indented-echo)"
+	eval "$(echo "$dotBashProfile" | __load_section__ BASH_SESSION_SCRIPTS_HOME)"
+	eval "$(echo "$dotBashProfile" | __load_section__ BASH_SESSION_SCRIPTS_HOME-directory-check)"
+	eval "$(echo "$dotBashProfile" | __load_section__ initial-local-variables)"
+
+	unset -f __load_section__
+	unset dotBashProfile
+fi
+
+# unset_on_exit should now be defined at this point.
+unset_on_exit is_bashrc_sourced_by_dot_bash_profile
+
+#########################################################
+##                                                     ##
+##   Load Initial Configuration and Starting Scripts   ##
+##                                                     ##
+#########################################################
+
+# Keep track of where we are
 __enter_this_file__
 
-##########################
-##                      ##
-##   Helper Functions   ##
-##                      ##
-##########################
-
-# To help clean things up.
-function __bash_sessionstart_notify__() {
-	if [[ "$2" == "" ]]; then
-		x="$(__this_file_name__)"
-	else
-		x=$2
-	fi
-    __add_username_label_if_logged_in_as__ root
-	echo -n "$3"
-    __say_that_we_are__ "$1" "$x" "$FCOLOR_BRIGHT_BLUE" "$FCOLOR_YELLOW"
-}
-
-function __say__() {
-	__add_username_label_if_logged_in_as__ root
-	echo -n "$2"
-	echo -n "$1"
-}
-
-function command_exists() {
-	command -v "$@" &> /dev/null
-}
-
-####################################
-##                                ##
-##   Load Initial Configuration   ##
-##                                ##
-####################################
-
-# Make sure we have the location of our scripts before doing ANYTHING.
-if [[ "$BASH_SESSION_SCRIPTS_HOME" == "" ]]; then
-	eval "$(grep -E '^BASH_SESSION_SCRIPTS_HOME_FILE=.*' $dataSource | head -n 1)"
-	BASH_SESSION_SCRIPTS_HOME=$(cat "$BASH_SESSION_SCRIPTS_HOME_FILE")
+msgPrefix=''
+if ! is_bashrc_sourced_by_dot_bash_profile; then
+	msgPrefix="Bootstrapping from ~/.bash_profile complete."$'\n'
 fi
 
-# We now genuinely care that BASH_SESSION_SCRIPTS_HOME *must* point to a directory.
-# Use the same directory checking code in ~/.bash_profile.
-eval "$(awk '
-	/# BASH_SESSION_SCRIPTS_HOME_directoryCheck_start/ {f=1; next}
-	/# BASH_SESSION_SCRIPTS_HOME_directoryCheck_end/   {f=0}
-	f
-' $dataSource)"
-
-# Add user's ~/bin to PATH if it exists
-USERS_BIN="$HOME/bin"
-[[ -d "$USERS_BIN" ]] && export PATH="$USERS_BIN:$PATH"
-
-# Get the location of the initial local variables if they haven't been loaded.
-# This is defined in ~/.bash_profile in the lines looking like:
-#
-#     INITIAL_LOCAL_VARIABLES_something=value
-#
-if [[ "$BASH_LOCAL_VARIABLES_LOADED" == "" ]]; then
-
-	# Load the variable declarations from ~/.bash_profile
-	sourceFile=~/.bash_profile
-	eval "$(grep -E '^INITIAL_LOCAL_VARIABLES_[[:alnum:]_]+=.*' $sourceFile)"
-
-	# As a result, this variable must be declared, and must point to an actual file.
-	if [[ ! -f "$INITIAL_LOCAL_VARIABLES_PATH" ]]; then
-		echo "In $(__this_file_name__):"
-		echo
-		echo "   \$INITIAL_LOCAL_VARIABLES_PATH not declared in $sourceFile."
-		echo
-		echo "   Please put this declaration in $sourceFile, pointing to the"
-		echo "   location of the file containing the initial local variable declarations."
-		echo
-		return
-	fi
-
-	# Now we can load the variables.
-	__bash_sessionstart_notify__ "Loading initial local variables from" "$(__this_file_name__)"; echo
-	source $INITIAL_LOCAL_VARIABLES_PATH
-fi
-
-##########################
-##                      ##
-##   Starting Scripts   ##
-##                      ##
-##########################
-
-# Load starting scripts if they exist
+# Load starting scripts if they exist (namely functions and aliases)
 for scriptName in "${STARTING_SCRIPTS[@]}"; do
 	shellScript="$BASH_SESSION_SCRIPTS_HOME/$scriptName"
 	if [[ -f "$shellScript" && -r "$shellScript" ]]; then
@@ -125,6 +67,14 @@ for scriptName in "${STARTING_SCRIPTS[@]}"; do
 	fi
 	unset shellScript
 done
+unset scriptName
+msgPrefix="${msgPrefix}Starting scripts loaded."$'\n'
+
+# We can now do this
+__bash_sessionstart_notify__ "${msgPrefix}Running the rest of"; echo
+prepend_to_PATH_if_it_exists ~/bin
+
+unset msgPrefix
 
 ############################
 ##                        ##
@@ -132,21 +82,23 @@ done
 ##                        ##
 ############################
 
-# Keep user posted on what we're doing
-__bash_sessionstart_notify__ "Running the rest of"; echo
-
 # Load any additional scripts if they exist
 ADDITIONAL_SCRIPTS_LOCATION="$BASH_SESSION_SCRIPTS_HOME/$ADDITIONAL_SCRIPTS_DIRECTORY"
 if [[ -d "$ADDITIONAL_SCRIPTS_LOCATION" ]]; then
+	_push_indent
 	for shellScript in "$ADDITIONAL_SCRIPTS_LOCATION"/*; do
 		if [[ -f "$shellScript" && -r "$shellScript" ]]; then
-			__bash_sessionstart_notify__ "Loading" "$(basename $shellScript)" "   "
+			iecho -n "$(__theme__ normal)Loading "
+			echo  -n "$(__theme__ highlight)$(basename $shellScript) "
+			echo  -n "$(__theme__ normal). . . "
 			source $shellScript
-			echo " ${FCOLOR_BRIGHT_BLUE}done!${RESET_TERMINAL}"
+			echo     "$(__theme__ normal)done!$(__ansi__ reset)"
 		fi
 	done
+	_pop_indent
 	unset shellScript
 fi
+unset ADDITIONAL_SCRIPTS_LOCATION
 
 ########################
 ##                    ##
@@ -154,7 +106,7 @@ fi
 ##                    ##
 ########################
 
-# Load ending scripts
+# Load ending scripts (terminal_prompt gets loaded here)
 for scriptName in "${ENDING_SCRIPTS[@]}"; do
 	shellScript="$BASH_SESSION_SCRIPTS_HOME/$scriptName"
 	if [[ -f "$shellScript" && -r "$shellScript" ]]; then
@@ -162,6 +114,7 @@ for scriptName in "${ENDING_SCRIPTS[@]}"; do
 	fi
 	unset shellScript
 done
+unset scriptName
 
 ##############
 ##          ##
@@ -172,10 +125,10 @@ done
 # Let user know we're leaving
 __bash_sessionstart_notify__ "Leaving"; echo
 
-# Blank line to keep things somewhat pretty
-[[ "${BASH_SOURCE[1]}" == "" ]] && echo
-
-# Expose this
-
 # Restore the name of the current file to the script that sourced this one
 __leave_this_file__
+
+# non-login shells get cleanup done here.
+if ! is_bashrc_sourced_by_dot_bash_profile; then
+	__call_this_at_the_very_end__
+fi

@@ -1,4 +1,12 @@
-# These scripts get loaded first.
+####################################
+##                                ##
+##   Script Names and Locations   ##
+##                                ##
+####################################
+
+unset_on_exit STARTING_SCRIPTS ADDITIONAL_SCRIPTS_DIRECTORY ENDING_SCRIPTS
+
+# These get loaded first.
 STARTING_SCRIPTS=("functions" "aliases")
 
 # Then any script in this directory gets loaded.
@@ -6,26 +14,3 @@ ADDITIONAL_SCRIPTS_DIRECTORY="bashrc.d"
 
 # Finally, these scripts are loaded.
 ENDING_SCRIPTS=("terminal_prompt")
-
-# ANSI escape sequences
-FCOLOR_BRIGHT_BLUE=$(tput setaf 12)
-FCOLOR_BRIGHT_CYAN=$(tput setaf 14)
-FCOLOR_BRIGHT_WHITE=$(tput setaf 15)
-FCOLOR_YELLOW=$(tput setaf 226)
-FCOLOR_RED=$(tput setaf 1)
-FCOLOR_BRIGHT_RED=$(tput setaf 9)
-FCOLOR_ORANGE=$(tput setaf 208)
-RESET_TERMINAL=$(tput sgr0)
-
-# PS1 prompt theme
-BRACKET_COLOR="\\[$FCOLOR_RED\\]"
-USERNAME_COLOR="\\[$FCOLOR_BRIGHT_RED\\]"
-AT_COLOR="\\[$FCOLOR_ORANGE\\]"
-HOSTNAME_COLOR=$USERNAME_COLOR
-CURRENT_DIRECTORY_COLOR="\\[$FCOLOR_YELLOW\\]"
-PROMPT_COLOR=$BRACKET_COLOR
-PS1_RESET_TERMINAL="\\[$RESET_TERMINAL\\]"
-PROMPT_TERMINATOR='$'
-
-# Okay, variables are loaded.
-BASH_LOCAL_VARIABLES_LOADED="yes"
