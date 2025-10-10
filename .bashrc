@@ -52,8 +52,6 @@ function __load_starting_scripts__() {
 	local scriptName
 	local shellScript
 
-	_push_indent
-
 	__add_username_label_if_logged_in_as__ root
 	echo "$(__theme__ normal)Loading starting scripts . . ."
 
@@ -69,8 +67,6 @@ function __load_starting_scripts__() {
 	__ansi__ reset
 	__add_username_label_if_logged_in_as__ root
 	echo "$(__theme__ normal)Starting scripts loaded."
-
-	_pop_indent
 }
 
 function __load_additional_scripts__() {
