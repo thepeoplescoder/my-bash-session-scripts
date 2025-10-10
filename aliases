@@ -20,17 +20,19 @@ alias cd..='cd ..'
 
 _push_indent
 
+__add_username_label_if_logged_in_as__ root
 __theme__ highlight
 if command_exists 'pacman'; then
 	alias pacman='pacman --color=auto '
-	iecho -n "pacman "
-	echo     "$(__theme__ normal)detected."
+	echo -n "pacman "
+	echo    "$(__theme__ normal)detected."
 elif command_exists 'apt'; then
 	alias apt-get='apt'
-	iecho -n "apt "
-	echo     "$(__theme__ normal)detected."
+	echo -n "apt "
+	echo    "$(__theme__ normal)detected."
 	if ! command_exists 'nala'; then
-		iecho "Consider installing nala!"
+		__add_username_label_if_logged_in_as__ root
+		echo "Consider installing nala!"
 	fi
 fi
 __ansi__ reset

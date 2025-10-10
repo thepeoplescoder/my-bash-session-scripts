@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
 if [ "$USER" == "$1" ]; then
+	__ansi__ default
 	echo -n "($1) "
 fi
+_indent

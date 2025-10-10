@@ -16,6 +16,9 @@ function start_dotBashRc() {
 
 	__enter_this_file__
 
+	__add_username_label_if_logged_in_as__ root
+	echo "$(__theme__ normal)Entering $(__theme__ highlight)$(__this_file_name__)$(__theme__ normal) . . ."
+
 	if __finish_bootstrapping_after_calling__enter_this_file__; then
 
 		# Load starting scripts if they exist (namely functions and aliases)
@@ -49,16 +52,25 @@ function __load_starting_scripts__() {
 	local scriptName
 	local shellScript
 
+	_push_indent
+
+	__add_username_label_if_logged_in_as__ root
+	echo "$(__theme__ normal)Loading starting scripts . . ."
+
+	_push_indent
 	for scriptName in "${STARTING_SCRIPTS[@]}"; do
 		shellScript="$BASH_SESSION_SCRIPTS_HOME/$scriptName"
 		if [[ -f "$shellScript" && -r "$shellScript" ]]; then
 			source $shellScript
 		fi
 	done
+	_pop_indent
 
 	__ansi__ reset
 	__add_username_label_if_logged_in_as__ root
 	echo "$(__theme__ normal)Starting scripts loaded."
+
+	_pop_indent
 }
 
 function __load_additional_scripts__() {
@@ -71,11 +83,12 @@ function __load_additional_scripts__() {
 		_push_indent
 		for shellScript in "$ADDITIONAL_SCRIPTS_LOCATION"/*; do
 			if [[ -f "$shellScript" && -r "$shellScript" ]]; then
-				iecho -n "$(__theme__ normal)Loading "
-				echo  -n "$(__theme__ highlight)$(basename $shellScript) "
-				echo  -n "$(__theme__ normal). . . "
+				__add_username_label_if_logged_in_as__ root
+				echo -n "$(__theme__ normal)Loading "
+				echo -n "$(__theme__ highlight)$(basename $shellScript) "
+				echo -n "$(__theme__ normal). . . "
 				source $shellScript
-				echo     "$(__theme__ normal)done!$(__ansi__ reset)"
+				echo    "$(__theme__ normal)done!$(__ansi__ reset)"
 			fi
 		done
 		_pop_indent

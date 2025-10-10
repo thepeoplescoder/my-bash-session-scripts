@@ -20,7 +20,7 @@ else
     HighlightColor=$4
 fi
 
-iecho -ne "${NormalColor}${Action} "
-echo  -ne "${HighlightColor}${TheThing} "
-echo  -ne "${NormalColor}. . ."
-echo  -ne "\033[0m"
+echo -ne "${NormalColor}${Action} "
+echo -ne "${HighlightColor}${TheThing} "
+echo -ne "${NormalColor}. . ."
+echo -ne "\033[0m"

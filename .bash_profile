@@ -6,9 +6,9 @@ function start_dotBashProfile() {
 	unset -f "$FUNCNAME"
 
 	__bootstrap_initial_functionality_for_dotBashProfile__
+	__load_text_io_functionality__
 
 	__enter_this_file__
-	__load_text_io_functionality__
 	__load_required_environment_variables__ && main_dotBashProfile
 	__leave_this_file__
 
@@ -24,7 +24,9 @@ function main_dotBashProfile() {
 	echo
 
 	# Load user's ~/.bashrc if it exists
+	_push_indent
 	[[ -f ~/.bashrc ]] && . ~/.bashrc
+	_pop_indent
 
 	# Let user know we're leaving
 	__add_username_label_if_logged_in_as__ root
@@ -87,7 +89,7 @@ function __load_sourced_file_stack__() {
 			if [ ${#BASH_SOURCE[@]} -lt 3 ]; then
 				return 1	# Cannot determine file path
 			fi
-			thisFileName="${BASH_SOURCE[2]/#$HOME/\~}"
+			thisFileName="${BASH_SOURCE[1]/#$HOME/\~}"
 			SOURCED_FILE_STACK+=("$thisFileName")
 		}
 
@@ -274,9 +276,10 @@ function __load_colors__() {
 function __load_indented_echo__() {
 	unset -f "$FUNCNAME"
 
+	# Export these since external scripts need them.
 	unset_on_exit __iecho_INDENT __iecho_INDENT_STRING
-	__iecho_INDENT=0
-	__iecho_INDENT_STRING="   "
+	export __iecho_INDENT=0
+	export __iecho_INDENT_STRING="   "
 
 	unset_on_exit _indent
 	function _indent() {
@@ -297,12 +300,14 @@ function __load_indented_echo__() {
 	function _push_indent() {
 		__iecho_INDENT=$(( __iecho_INDENT + 1 ))
 	}
+	export -f _push_indent
 
 	unset_on_exit _pop_indent
 	function _pop_indent() {
 		__iecho_INDENT=$(( __iecho_INDENT - 1 ))
 		[[ $__iecho_INDENT -lt 0 ]] && __iecho_INDENT=0
 	}
+	export -f _pop_indent
 }
 
 
