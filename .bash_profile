@@ -181,6 +181,7 @@ function __load_colors__() {
 					;;
 			esac
 		}
+		export -f __color__
 
 		unset_on_exit __ansi__
 		function __ansi__() {
@@ -213,6 +214,7 @@ function __load_colors__() {
 					;;
 			esac
 		}
+		export -f __ansi__
 
 		unset_on_exit __theme__
 		function __theme__() {
@@ -225,6 +227,7 @@ function __load_colors__() {
 					;;
 			esac
 		}
+		export -f __theme__
 
 		__ansi__ reset
 
@@ -236,12 +239,14 @@ function __load_colors__() {
 				__ansi__ color $1
 			fi
 		}
+		export -f __set_color__
 
 		unset_on_exit set_color
 		function set_color() {
 			COLOR_STACK+=("$1")
 			__set_color__ $1
 		}
+		export -f set_color
 
 		unset_on_exit peek_color
 		function peek_color() {
@@ -253,6 +258,7 @@ function __load_colors__() {
 				echo "${COLOR_STACK[lastIndex]}"
 			fi
 		}
+		export -f peek_color
 
 		unset_on_exit pop_color
 		function pop_color() {
@@ -265,11 +271,8 @@ function __load_colors__() {
 				__set_color__ $(peek_color)
 			fi
 		}
+		export -f pop_color
 
-		# Export these functions so that my external scripts can use them
-		export -f __color__
-		export -f __ansi__
-		export -f __theme__
 	fi
 }
 
