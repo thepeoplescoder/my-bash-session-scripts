@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-if ! command -v __theme__ &> /dev/null || ! command -v iecho &> /dev/null; then
-    echo "__theme__ or iecho functions unavailable."
+if ! command -v __theme__ &> /dev/null; then
+    echo "__theme__ function unavailable."
     exit 1
 fi
 
