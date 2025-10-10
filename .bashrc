@@ -145,7 +145,9 @@ function __bootstrap_initial_functionality_for_dotBashRc__() {
 	if ! is_bashrc_sourced_by_dot_bash_profile; then
 		dotBashProfile="$(cat ~/.bash_profile)"
 		eval "$(echo "$dotBashProfile" | parse_unindented_function __bootstrap_initial_functionality_for_dotBashProfile__)"
+		eval "$(echo "$dotBashProfile" | parse_unindented_function __load_text_io_functionality__)"
 		__bootstrap_initial_functionality_for_dotBashProfile__
+		__load_text_io_functionality__
 	fi
 
 	unset_on_exit exists_in_array
@@ -157,10 +159,7 @@ function __bootstrap_initial_functionality_for_dotBashRc__() {
 
 		# These must be done *after* __enter_this_file__ is called.
 		if [[ "$dotBashProfile" ]]; then
-			eval "$(echo "$dotBashProfile" | parse_unindented_function __load_text_io_functionality__)"
 			eval "$(echo "$dotBashProfile" | parse_unindented_function __load_required_environment_variables__)"
-
-			__load_text_io_functionality__
 
 			if __load_required_environment_variables__; then
 				__add_username_label_if_logged_in_as__ root
