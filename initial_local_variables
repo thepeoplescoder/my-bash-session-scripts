@@ -12,7 +12,7 @@ function __main__() {
 function initialize_variables_for_loading_scripts() {
     unset -f "$FUNCNAME"
 
-    STARTING_SCRIPTS=("functions" "aliases")    # These get loaded first.
+    STARTING_SCRIPTS=("aliases")                # These get loaded first.
     ADDITIONAL_SCRIPTS_DIRECTORY="bashrc.d"     # Then any script in this directory gets loaded.
     ENDING_SCRIPTS=("terminal_prompt")          # Finally, these scripts are loaded.
 
