@@ -26,7 +26,7 @@ function define_aliases_for_cargo_installed_apps_here() {
 # Wrapper to set an alias for an app installed by cargo.
 unset_on_exit cargo_set_alias_for
 function cargo_set_alias_for() {
-    is_installed_by_cargo || return
+    is_installed_by_cargo "$1" || return
     [[ "$3" ]] && shift
     alias "$1"="$2"
 }
