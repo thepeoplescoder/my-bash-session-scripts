@@ -3,7 +3,7 @@ function __main__() {
 
 	command_exists 'dircolors' || return 1
 
-	local dircolorsFile=$(get_dircolors_file)
+	local dircolorsFile=$(echo_dircolors_file_location)
 
 	create_this_file_if_it_does_not_exist "$dircolorsFile"
 	set_LS_COLORS_using_this_file         "$dircolorsFile"
@@ -11,7 +11,7 @@ function __main__() {
 	true
 }
 
-function get_dircolors_file() {
+function echo_dircolors_file_location() {
 	unset -f "$FUNCNAME"
 	echo "$HOME/.dircolors"		# This line echoes the location of your dircolors file.
 }
