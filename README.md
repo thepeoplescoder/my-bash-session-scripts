@@ -7,3 +7,5 @@ git clone https://github.com/thepeoplescoder/my-bash-session-scripts ~/.bash_ses
 cd ~/.bash_session_scripts
 install-scripts/install
 ```
+
+and restart your terminal.
