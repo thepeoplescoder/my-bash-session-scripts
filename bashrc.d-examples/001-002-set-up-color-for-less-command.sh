@@ -1,14 +1,14 @@
 function __main__() {
-    unset -f "$FUNCNAME"
+	unset -f "$FUNCNAME"
 
-    set_LESS
+	set_LESS
 
-    true
+	true
 }
 
 function set_LESS() {
-    unset -f "$FUNCNAME"
-    export LESS='-R --use-color -Dd+r$Du+b$'
+	unset -f "$FUNCNAME"
+	export LESS='-R --use-color -Dd+r$Du+b$'
 }
 
 __main__
