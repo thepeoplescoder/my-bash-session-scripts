@@ -23,9 +23,10 @@ function main_dotBashProfile() {
 	__say_that_we_are__ "Running the rest of" "$(__this_file_name__)"
 	echo
 
-	# Load user's ~/.bashrc if it exists
+	# Load user's ~/.profile and ~/.bashrc if they exist
 	_push_indent
-	[[ -f ~/.bashrc ]] && . ~/.bashrc
+	[[ -f ~/.profile ]] && . ~/.profile
+	[[ -f ~/.bashrc ]]  && . ~/.bashrc
 	_pop_indent
 
 	# Let user know we're leaving
@@ -39,13 +40,85 @@ function main_dotBashProfile() {
 function __bootstrap_initial_functionality_for_dotBashProfile__() {
 	unset -f "$FUNCNAME"
 
-	if [[ "$dotBashProfile" ]]; then
-		eval "$(echo "$dotBashProfile" | parse_unindented_function __load_cleanup__)"
-		eval "$(echo "$dotBashProfile" | parse_unindented_function __load_sourced_file_stack__)"
+	if [[ "$1" ]]; then
+		eval "$(echo "$1" | parse_unindented_function __load_cleanup__)"
+		eval "$(echo "$1" | parse_unindented_function __load_helper_functions__)"
+		eval "$(echo "$1" | parse_unindented_function __load_sourced_file_stack__)"
 	fi
 
 	__load_cleanup__
+	__load_helper_functions__
 	__load_sourced_file_stack__
+}
+
+
+
+# Helper functions.  These remain defined until reaching the terminal prompt.
+function __load_helper_functions__() {
+	unset -f "$FUNCNAME"
+
+	unset_on_exit is_root_user
+	function is_root_user() {
+		[ "$1" == "" ] && (( EUID == 0 )) || [[ "$1" == "root" ]]
+	}
+
+	unset_on_exit __say_that_we_are__
+	function __say_that_we_are__() {
+		local Action=$1
+		local TheThing=$2
+		local NormalColor=$3
+		local HighlightColor=$4
+
+		if [[ ! "$NormalColor" ]]; then
+			NormalColor=$(__theme__ normal)
+		fi
+
+		if [[ ! "$HighlightColor" ]]; then
+			HighlightColor=$(__theme__ highlight)
+		fi
+
+		echo -ne "${NormalColor}${Action} "
+		echo -ne "${HighlightColor}${TheThing} "
+		echo -ne "${NormalColor}. . ."
+		echo -ne "\033[0m"
+	}
+
+	unset_on_exit __add_username_label_if_logged_in_as__
+	function __add_username_label_if_logged_in_as__() {
+		if [ "$USER" == "$1" ]; then
+			__ansi__ default
+			echo -n "($1) "
+		fi
+		_indent
+	}
+
+	unset_on_exit __bash_sessionstart_notify__
+	function __bash_sessionstart_notify__() {
+		local x=$2
+		if [[ ! "$x" ]]; then
+			x="$(__this_file_name__)"
+		fi
+		__add_username_label_if_logged_in_as__ root
+		echo -n "$3"
+		__say_that_we_are__ "$1" "$x" "$(__theme__ normal)" "$(__theme__ highlight)"
+	}
+
+	unset_on_exit __say__
+	function __say__() {
+		__add_username_label_if_logged_in_as__ root
+		echo -n "$2"
+		echo -n "$1"
+	}
+
+	unset_on_exit command_exists
+	function command_exists() {
+		command -v "$@" &> /dev/null
+	}
+
+	unset_on_exit prepend_to_PATH_if_it_exists
+	function prepend_to_PATH_if_it_exists() {
+		[[ -d "$1" ]] && export PATH="$1:$PATH"
+	}
 }
 
 function __load_cleanup__() {
@@ -122,9 +195,9 @@ function __load_sourced_file_stack__() {
 function __load_text_io_functionality__() {
 	unset -f "$FUNCNAME"
 
-	if [[ "$dotBashProfile" ]]; then
-		eval "$(echo "$dotBashProfile" | parse_unindented_function __load_colors__)"
-		eval "$(echo "$dotBashProfile" | parse_unindented_function __load_indented_echo__)"
+	if [[ "$1" ]]; then
+		eval "$(echo "$1" | parse_unindented_function __load_colors__)"
+		eval "$(echo "$1" | parse_unindented_function __load_indented_echo__)"
 	fi
 
 	__load_colors__
@@ -318,10 +391,10 @@ function __load_indented_echo__() {
 function __load_required_environment_variables__() {
 	unset -f "$FUNCNAME"
 
-	if [[ "$dotBashProfile" ]]; then
-		eval "$(echo "$dotBashProfile" | parse_unindented_function __load_BASH_SESSION_SCRIPTS_HOME__)"
-		eval "$(echo "$dotBashProfile" | parse_unindented_function __run_BASH_SESSION_SCRIPTS_HOME_directory_check__)"
-		eval "$(echo "$dotBashProfile" | parse_unindented_function __load_initial_local_variables__)"
+	if [[ "$1" ]]; then
+		eval "$(echo "$1" | parse_unindented_function __load_BASH_SESSION_SCRIPTS_HOME__)"
+		eval "$(echo "$1" | parse_unindented_function __run_BASH_SESSION_SCRIPTS_HOME_directory_check__)"
+		eval "$(echo "$1" | parse_unindented_function __load_initial_local_variables__)"
 	fi
 
 	__load_BASH_SESSION_SCRIPTS_HOME__ && __run_BASH_SESSION_SCRIPTS_HOME_directory_check__ && __load_initial_local_variables__

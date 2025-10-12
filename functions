@@ -2,54 +2,24 @@
 # Use this file instead of ~/.bash_functions
 #
 
-###########
-## Entry ##
-###########
+function start_functions() {
+	unset -f "$FUNCNAME"
 
-# Keep track of where we are
-__enter_this_file__
-
-# Let user know we're in here
-unset_on_exit __bash_sessionstart_notify__
-function __bash_sessionstart_notify__() {
-	if [[ "$2" == "" ]]; then
-		x="$(__this_file_name__)"
-	else
-		x=$2
-	fi
-    __add_username_label_if_logged_in_as__ root
-	echo -n "$3"
-    __say_that_we_are__ "$1" "$x" "$(__theme__ normal)" "$(__theme__ highlight)"
-}
-__bash_sessionstart_notify__ "Entering"; echo
-
-###############
-## Functions ##
-###############
-
-unset_on_exit __say__
-function __say__() {
-	__add_username_label_if_logged_in_as__ root
-	echo -n "$2"
-	echo -n "$1"
+	__enter_this_file__
+	main_functions
+	__leave_this_file__
 }
 
-unset_on_exit command_exists
-function command_exists() {
-	command -v "$@" &> /dev/null
+function main_functions() {
+	unset -f "$FUNCNAME"
+	__bash_sessionstart_notify__ "Entering"; echo
+	define_your_functions_inside_this_function
+	__bash_sessionstart_notify__ "Leaving"; echo
 }
 
-unset_on_exit prepend_to_PATH_if_it_exists
-function prepend_to_PATH_if_it_exists() {
-	[[ -d "$1" ]] && export PATH="$1:$PATH"
+function define_your_functions_inside_this_function() {
+	unset -f "$FUNCNAME"
+	# Define your functions starting here
 }
 
-##########
-## Exit ##
-##########
-
-# Let user know we're leaving
-__bash_sessionstart_notify__ "Leaving"; echo
-
-# Restore the name of the current file to the script that sourced this one
-__leave_this_file__
+start_functions

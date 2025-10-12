@@ -1,8 +1,17 @@
 #!/usr/bin/env bash
 
+function start() {
+    if is_user_sure && main; then
+        echo "Cleanup complete."
+    else
+        echo "Aborted."
+    fi
+}
+
 function main() {
     delete_conventional_scripts
     rm_noerr ~/.bash_session_scripts_home
+    true
 }
 
 function delete_conventional_scripts() {
@@ -15,4 +24,61 @@ function rm_noerr() {
     rm "$@" 2> /dev/null
 }
 
-main
+function is_user_sure() {
+    display_this_scripts_source_code
+    echo -en "\a"
+    echo "In other words, the following files are going to be DELETED if they exist:"
+    echo
+    show_which_files_are_going_to_be_deleted
+    echo
+    yes_no_prompt_with_no_as_default "Are you sure you wish to continue" || return
+    yes_no_prompt_with_no_as_default "Are you REALLY sure"
+}
+
+function show_which_files_are_going_to_be_deleted() {
+    local file
+    for file in $(grep -i '^[[:space:]]*rm_noerr' "$0" | awk '{print $2}'); do
+        echo "   $file"
+    done
+}
+
+function yes_no_prompt_with_no_as_default() {
+    echo -n "$1 (y/N)? "
+    local choice
+    read choice
+    [[ "$choice" == "y" || "$choice" == "Y" ]]
+}
+
+function display_this_scripts_source_code() {
+    clear
+    echo "$(get_source_code_with_optional_syntax_highlighting_if_bat_is_installed)" | less -XR
+    echo
+}
+
+function get_source_code_with_optional_syntax_highlighting_if_bat_is_installed() {
+    display_source_code_header
+    if command -v 'bat' &> /dev/null; then
+        display_source_code_with_syntax_highlighting_via_bat
+    else
+        display_source_code_without_syntax_highlighting '\x1b[1;31m'
+    fi
+}
+
+function display_source_code_header() {
+    echo -en "\e[1;32m"
+    echo -en "Source code of this script.  Scroll up/down or press Q to continue."
+    echo  -e "\e[0m"
+    echo  -e "-------------------------------------------------------------------"
+}
+
+function display_source_code_with_syntax_highlighting_via_bat() {
+    bat -SP --color=always --style=-changes,-grid,-header-filename,-numbers,-snip "$0"
+}
+
+function display_source_code_without_syntax_highlighting() {
+    local ansiColorCode=$1
+    local reset='\x1b[0m'
+    cat "$0" | sed "s/^/$ansiColorCode/; s/$/$reset/"
+}
+
+start

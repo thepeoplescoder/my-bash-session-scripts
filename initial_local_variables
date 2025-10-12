@@ -4,13 +4,21 @@
 ##                                ##
 ####################################
 
-unset_on_exit STARTING_SCRIPTS ADDITIONAL_SCRIPTS_DIRECTORY ENDING_SCRIPTS
+function __main__() {
+    unset -f "$FUNCNAME"
+    initialize_variables_for_loading_scripts
+}
 
-# These get loaded first.
-STARTING_SCRIPTS=("functions" "aliases")
+function initialize_variables_for_loading_scripts() {
+    unset -f "$FUNCNAME"
 
-# Then any script in this directory gets loaded.
-ADDITIONAL_SCRIPTS_DIRECTORY="bashrc.d"
+    STARTING_SCRIPTS=("functions" "aliases")    # These get loaded first.
+    ADDITIONAL_SCRIPTS_DIRECTORY="bashrc.d"     # Then any script in this directory gets loaded.
+    ENDING_SCRIPTS=("terminal_prompt")          # Finally, these scripts are loaded.
 
-# Finally, these scripts are loaded.
-ENDING_SCRIPTS=("terminal_prompt")
+    unset_on_exit STARTING_SCRIPTS
+    unset_on_exit ADDITIONAL_SCRIPTS_DIRECTORY
+    unset_on_exit ENDING_SCRIPTS
+}
+
+__main__

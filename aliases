@@ -2,45 +2,62 @@
 # Use this file instead of ~/.bash_aliases
 #
 
-# Keep track of where we are
-__enter_this_file__
+function start_aliases() {
+	unset -f "$FUNCNAME"
+	__enter_this_file__
+	main_aliases
+	__leave_this_file__
+}
 
-# Let user know we're in here
-__bash_sessionstart_notify__ "Entering"; echo
+function main_aliases() {
+	unset -f "$FUNCNAME"
 
-# Some useful aliases, and others for color
-alias ls='LC_COLLATE=C ls --group-directories-first --color=auto'
-alias grep='grep --color=auto'
-alias sudo='sudo '
-alias ip='ip -color=auto'
-alias diff='diff --color=auto'
-alias mvv='mv -v'
-alias cpv='cp -v'
-alias cd..='cd ..'
+	__bash_sessionstart_notify__ "Entering"; echo
 
-_push_indent
+	load_aliases_for_color
+	load_aliases_for_verbosity
+	load_other_aliases
 
-__add_username_label_if_logged_in_as__ root
-__theme__ highlight
-if command_exists 'pacman'; then
-	alias pacman='pacman --color=auto '
-	echo -n "pacman "
-	echo    "$(__theme__ normal)detected."
-elif command_exists 'apt'; then
-	alias apt-get='apt'
-	echo -n "apt "
-	echo    "$(__theme__ normal)detected."
-	if ! command_exists 'nala'; then
-		__add_username_label_if_logged_in_as__ root
-		echo "Consider installing nala!"
+	__bash_sessionstart_notify__ "Leaving"; echo
+}
+
+function load_aliases_for_color() {
+	unset -f "$FUNCNAME"
+	alias ls='LC_COLLATE=C ls --group-directories-first --color=auto'
+	alias grep='grep --color=auto'
+	alias ip='ip -color=auto'
+	alias diff='diff --color=auto'
+
+	load_alias_for_package_manager_if_needed
+}
+
+function load_aliases_for_verbosity() {
+	unset -f "$FUNCNAME"
+	alias mvv='mv -v'
+	alias cpv='cp -v'
+}
+
+function load_other_aliases() {
+	unset -f "$FUNCNAME"
+	alias sudo='sudo '
+	alias cd..='cd ..'
+}
+
+function load_alias_for_package_manager_if_needed() {
+	unset -f "$FUNCNAME"
+	_push_indent
+
+	__add_username_label_if_logged_in_as__ root
+
+	__theme__ highlight
+	if command_exists 'pacman'; then
+		alias pacman='pacman --color=auto '
+		echo -n "pacman "
+		echo    "$(__theme__ normal)detected."
 	fi
-fi
-__ansi__ reset
+	__ansi__ reset
 
-_pop_indent
+	_pop_indent
+}
 
-# Let user know we're leaving
-__bash_sessionstart_notify__ "Leaving"; echo
-
-# Restore the name of the current file to the script that sourced this one
-__leave_this_file__
+start_aliases
