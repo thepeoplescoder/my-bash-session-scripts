@@ -1,9 +1,11 @@
 # Entry point.
 function __main__() {
     unset -f "$FUNCNAME"
+
     cargo_load_dot_cargo_env
     define_aliases_for_cargo_installed_apps_here
     cargo_load_root_functionality
+
     true
 }
 
