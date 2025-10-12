@@ -20,12 +20,8 @@ function start_dotBashRc() {
 	echo "$(__theme__ normal)Entering $(__theme__ highlight)$(__this_file_name__)$(__theme__ normal) . . ."
 
 	if __finish_bootstrapping_after_calling__enter_this_file__; then
-
-		# Load starting scripts if they exist (namely functions and aliases)
-		# Needed for functions such as __bash_sessionstart_notify__, prepend_to_PATH_if_it_exists
 		__load_starting_scripts__
 		prepend_to_PATH_if_it_exists ~/bin
-
 		main_dotBashRc
 	fi
 
