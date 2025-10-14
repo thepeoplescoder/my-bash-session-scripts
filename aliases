@@ -23,18 +23,18 @@ function main_aliases() {
 
 function load_aliases_for_color() {
 	unset -f "$FUNCNAME"
-	alias ls='LC_COLLATE=C ls --group-directories-first --color=auto'
-	alias grep='grep --color=auto'
-	alias ip='ip -color=auto'
-	alias diff='diff --color=auto'
+	alias ls='LC_COLLATE=C ls --group-directories-first --color=auto '
+	alias grep='grep --color=auto '
+	alias ip='ip -color=auto '
+	alias diff='diff --color=auto '
 
 	load_alias_for_package_manager_if_needed
 }
 
 function load_aliases_for_verbosity() {
 	unset -f "$FUNCNAME"
-	alias mvv='mv -v'
-	alias cpv='cp -v'
+	alias mvv='mv -v '
+	alias cpv='cp -v '
 }
 
 function load_other_aliases() {

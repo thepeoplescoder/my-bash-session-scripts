@@ -60,7 +60,7 @@ function is_installed_by_cargo() {
 # Checks to see if a command is installed in $HOME/.cargo/bin
 unset_on_exit is_installed_in_users_dot_cargo_directory
 function is_installed_in_users_dot_cargo_directory() {
-	[[ "$(which "$1")" == "$HOME/.cargo/bin/$1" ]]
+	[[ "$(which "$1" 2> /dev/null)" == "$HOME/.cargo/bin/$1" ]]
 }
 
 # Run the script
