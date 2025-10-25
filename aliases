@@ -1,63 +1,9 @@
 #
-# Use this file instead of ~/.bash_aliases
+# aliases
 #
 
-function start_aliases() {
-	unset -f "$FUNCNAME"
-	__enter_this_file__
-	main_aliases
-	__leave_this_file__
-}
+# Load internal aliases
+source "$__MY_INCLUDE_DIR__/aliases/_.sh"
 
-function main_aliases() {
-	unset -f "$FUNCNAME"
-
-	__bash_sessionstart_notify__ "Entering"; echo
-
-	load_aliases_for_color
-	load_aliases_for_verbosity
-	load_other_aliases
-
-	__bash_sessionstart_notify__ "Leaving"; echo
-}
-
-function load_aliases_for_color() {
-	unset -f "$FUNCNAME"
-	alias ls='LC_COLLATE=C ls --group-directories-first --color=auto '
-	alias grep='grep --color=auto '
-	alias ip='ip -color=auto '
-	alias diff='diff --color=auto '
-
-	load_alias_for_package_manager_if_needed
-}
-
-function load_aliases_for_verbosity() {
-	unset -f "$FUNCNAME"
-	alias mvv='mv -v '
-	alias cpv='cp -v '
-}
-
-function load_other_aliases() {
-	unset -f "$FUNCNAME"
-	alias sudo='sudo '
-	alias cd..='cd ..'
-}
-
-function load_alias_for_package_manager_if_needed() {
-	unset -f "$FUNCNAME"
-	_push_indent
-
-	__add_username_label_if_logged_in_as__ root
-
-	__theme__ highlight
-	if command_exists 'pacman'; then
-		alias pacman='pacman --color=auto '
-		echo -n "pacman "
-		echo    "$(__theme__ normal)detected."
-	fi
-	__ansi__ reset
-
-	_pop_indent
-}
-
-start_aliases
+# Load user's ~/.bash_aliases if it exists.
+[[ -f ~/.bash_aliases ]] && . ~/.bash_aliases

@@ -10,7 +10,6 @@ function start() {
 
 function main() {
     delete_conventional_scripts
-    rm_noerr ~/.bash_session_scripts_home
     true
 }
 
@@ -60,7 +59,7 @@ function get_source_code_with_optional_syntax_highlighting_if_bat_is_installed()
     if command -v 'bat' &> /dev/null; then
         display_source_code_with_syntax_highlighting_via_bat
     else
-        display_source_code_without_syntax_highlighting '\x1b[1;31m'
+        display_source_code_without_syntax_highlighting_using_ansi_color_code '\x1b[1;31m'
     fi
 }
 
@@ -75,9 +74,10 @@ function display_source_code_with_syntax_highlighting_via_bat() {
     bat -SP --color=always --style=-changes,-grid,-header-filename,-numbers,-snip "$0"
 }
 
-function display_source_code_without_syntax_highlighting() {
+function display_source_code_without_syntax_highlighting_using_ansi_color_code() {
     local ansiColorCode=$1
     local reset='\x1b[0m'
+
     cat "$0" | sed "s/^/$ansiColorCode/; s/$/$reset/"
 }
 

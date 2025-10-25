@@ -1,463 +1,174 @@
 #!/usr/bin/env bash
 
-# This is just to deliberately cause some commands to slow down for *slightly* easier reading.
-function with_post_delay() {
-    local exitCode
-    "$@"
-    exitCode=$?
-    sleep $DELAY
-    return $exitCode
+# Define this now because we're gonna be using this a lot.
+alias realpath='realpath --canonicalize-missing'
+
+# Some helpful variables
+THIS_SCRIPT="$(command realpath "${BASH_SOURCE[0]}")"
+THIS_SCRIPT_DIR="$(dirname "$THIS_SCRIPT")"
+__REPO_DIR__="$(dirname "$THIS_SCRIPT_DIR")"
+__MY_INCLUDE_DIR__="$__REPO_DIR__/include"
+INITIAL_PWD="$(pwd)"
+
+# Load libraries
+for __library__ in \
+    "$__MY_INCLUDE_DIR__/initialization/_.sh" \
+    \
+    "$__MY_INCLUDE_DIR__/libraries/helper_functions.sh" \
+    "$__MY_INCLUDE_DIR__/libraries/text_io/_.sh"  \
+    \
+    "$__MY_INCLUDE_DIR__/installer/file_io.sh" \
+    "$__MY_INCLUDE_DIR__/installer/parse_command_line_args.sh" \
+    "$__MY_INCLUDE_DIR__/installer/integrity_checking_functions.sh" \
+    "$__MY_INCLUDE_DIR__/installer/installation_functions.sh"
+do
+    source "$__library__" || ( echo "$__library__ not found." && exit 1 )
+done
+unset __library__
+
+# Sane defaults
+INSTALL_DIRECTORY="$HOME/.bash_session_scripts"
+
+# Setup/shutdown environment
+function start() {
+    local retval
+
+    parse_command_line_args_and_call_main "$@"
+    retval=$?
+    cd "$INITIAL_PWD"
+
+    echo
+ 
+    return $retval
 }
-DELAY=0
 
-# Loads everything we need to run the installation script.
-function __load_everything_and_start__() {
+# Parses command line before calling main
+declare -A ENCOUNTERED_COMMANDS
+function parse_command_line_args_and_call_main() {
+    while [[ "$#" -gt 0 ]]; do
+        cmd="$1"
+        shift
 
-    __load_bootstrapping_functions__
-
-    __load_startup_functions__
-    __load_installation_functions__
-    __load_integrity_checking_functions__
-    __load_error_message_functions__
-    __load_directory_finding_functions__
-    __load_text_printing_functions__
-    __load_file_io_functions__
-
-    # Set up functionality
-    __steal_a_few_functions_from_our_repositorys_bash_profile__ && start "$@"
-}
-
-
-
-# This is where the entry point is located.
-function __load_startup_functions__() {
-
-    # Set up environment
-    function start() {
-        local retval
-        local oldWorkingDirectory="$(pwd)"
-
-        main "$@"
-        retval=$?
-
-        chdir_and_show "$oldWorkingDirectory"
-
-        return $retval
-    }
-
-    # Entry point
-    function main() {
-        local retval=false
-
-        local errorMessage="$(make_sure_this_repository_is_directly_in_users_home)"
-
-        if [ ! "$errorMessage" ]; then
-            chdir_and_show "$(get_repo_directory)"
-
-            check_for_and_exit_if_we_find any_missing_directory_in_list "not found or not a directory."
-            check_for_and_exit_if_we_find any_missing_file_in_list      "not found or not readable."
-
-            if the_user_wants_to_install; then
-                retval=do_the_install_from_the_repo_directory
-            else
-                log_echo "Installation cancelled."
-            fi
+        if [[ "${ENCOUNTERED_COMMANDS[$cmd]}" ]]; then
+            case "$cmd" in
+                to)
+                    echo -n "Install directory was already set to: "
+                    echo -n "$(__ansi__ bright blue)$INSTALL_DIRECTORY"
+                    echo    "$(__ansi__ reset)"
+                    echo -n "Cannot set install directory with the "
+                    echo -n "$(__ansi__ bright blue)to "
+                    echo    "$(__ansi__ reset)subcommand more than once."
+                    return 1
+                    ;;
+                *)
+                    continue
+                    ;;
+            esac
         else
-            echo "$errorMessage"
+            ENCOUNTERED_COMMANDS[$cmd]='true'
         fi
 
-        eval "$retval"
-    }
-
-}
-
-
-
-function __load_installation_functions__() {
-
-    function do_the_install_from_the_repo_directory() {
-        nondestructively_remove_bash_session_scripts_home
-        nondestructively_symlink_required_files_to_users_home_directory
-
-        log_to_console "Running" "pwd > \"$INSTALLATION_HOME_DIR_FILE\""; echo
-        if with_post_delay pwd > "$INSTALLATION_HOME_DIR_FILE"; then
-            display_success
-        else
-            error_echo "Failed writing to $INSTALLATION_HOME_DIR_FILE."
-        fi
-    }
-
-    function the_user_wants_to_install() {
-        clear
-        __beep__
-
-        __ansi__ bright red
-        echo "##############################################"
-        echo "# WARNING!!!  PLEASE READ BEFORE CONTINUING. #"
-        echo "##############################################"
-        echo
-
-        with_post_delay chdir_and_show .
-
-        __ansi__ bright yellow
-        echo "If the following files exist:"
-        echo
-
-        __ansi__ color yellow
-        echo "   ${INSTALLATION_HOME_DIR_FILE/#$HOME/\~}"
-        local file
-        for file in "${FILES_TO_SYMLINK[@]}"; do
-            echo "   ~/$file"
-        done
-        echo
-
-        __ansi__ bright yellow
-        echo "they will be deleted if they are symbolic links,"
-        echo "and renamed with an extension of .old otherwise."
-        echo
-
-        __ansi__ bright red
-        echo -n "Are you sure you want to continue (y/N)? "
-        local choice
-        read choice
-        echo
-
-        [[ "$choice" == "y" || "$choice" == "Y" ]]
-    }
-
-    function display_success() {
-        log_echo "Success!  Restart your terminal."
-        echo
-        true
-    }
-
-}
-
-
-
-function __load_integrity_checking_functions__() {
-
-    function make_sure_this_repository_is_directly_in_users_home() {
-        local pathToThisScript="$(get_path_to_this_script_without_expanding_symlinks)"
-
-        local dirnameOfThisScript="$(dirname "$pathToThisScript")"
-        local nameOfDirectoryThatThisScriptShouldBeIn="${DIRECTORY_LIST[2]}"
-
-        if [[ "$(basename "$dirnameOfThisScript")" != "$nameOfDirectoryThatThisScriptShouldBeIn" ]]; then
-            error_echo "Please move this script back to $nameOfDirectoryThatThisScriptShouldBeIn."; echo
-            echo
-            return 1
-        fi
-
-        local dirnameOfThisRepository="$(dirname "$dirnameOfThisScript")"
-        local parentDirectoryOfThisRepository="$(dirname "$dirnameOfThisRepository")"
-
-        if [[ "$parentDirectoryOfThisRepository" != "$HOME" ]]; then
-            complain_that_we_are_not_directly_in_home
-            return 1
-        fi
-
-        return 0
-    }
-
-    function check_for_and_exit_if_we_find() {
-        local missingItem="$($1)"
-        if [[ "$missingItem" ]]; then
-            error_echo "$missingItem $2"; echo
-            tell_user_to_run_script_in_repo_directory_and_exit
-        fi
-    }
-
-    function any_missing_directory_in_list() {
-        at_least_one_match_exists not_a_directory "${DIRECTORY_LIST[@]}"
-    }
-
-    function any_missing_file_in_list() {
-        at_least_one_match_exists not_a_readable_file "${FILE_LIST[@]}"
-    }
-
-    function at_least_one_match_exists() {
-        local ourMetaphoricalNeedleIs="$1"
-        local haystack="${@:2}"
-        local item
-        for item in $haystack; do
-            if $ourMetaphoricalNeedleIs "$item"; then
-                echo "$item"
+        case "$cmd" in
+            to)
+                [[ "$1" ]] && INSTALL_DIRECTORY="$1"
+                shift
+                ;;
+            help|--help)
+                display_help
                 return 0
-            fi
-        done
-        false
-    }
+                ;;
+            *)
+                echo "Unrecognized command: $cmd"
+                return 1
+                ;;
+        esac
+    done
 
-    function not_a_directory() {
-        [ ! -d "$1" ]
-    }
+    # Just to drive the point home as to where we are
+    cd "$INITIAL_PWD"
 
-    function not_a_readable_file() {
-        [[ ! -f "$1" || ! -r "$1" ]]
-    }
+    if [[ "$(realpath "$INSTALL_DIRECTORY")" == "$(realpath "$HOME")" ]]; then
+        echo "Installation directory cannot be \$HOME."
+        return 1
+    fi
 
-    function is_a_readable_file() {
-        ! not_a_readable_file "$@"
-    }
-
+    main "$(realpath "$INSTALL_DIRECTORY")"
 }
 
+# "Entry" point
+function main() {
+    local fullPathToInstallDirectory="$1"
+    local retval=1
 
+    chdir_and_show "$__REPO_DIR__"
 
-function __load_error_message_functions__() {
+    check_for_and_exit_if_we_find any_missing_directory_in_list "not found or not a directory."
+    check_for_and_exit_if_we_find any_missing_file_in_list      "not found or not readable."
 
-    function complain_that_we_are_not_directly_in_home() {
-        local d="$(get_repo_directory)"
-        error_echo "$(basename "$d") must be located in your home directory!"
-        error_echo "It is currently located in $(dirname "$d")."
-        error_echo
-    }
+    if the_user_wants_to_install_in "$fullPathToInstallDirectory"; then
+        do_the_install_in "$fullPathToInstallDirectory"
+        retval=$?
+    else
+        log_echo "Installation cancelled."
+    fi
 
-    function tell_user_to_run_script_in_repo_directory_and_exit() {
-        error_echo "Please run this script in the directory that the repository "
-        error_echo "was cloned from."
-        error_echo
-    }
-
-    function abort() {
-        error_echo "$@"
-        exit 99
-    }
-
+    return $retval
 }
 
+function display_help() {
+    echo -n "$(__ansi__ bright white)$(basename "$0") "
+    echo -n "$(__ansi__ bright black)[to /path/to/install/location] "
+    echo    "$(__ansi__ bright black)[help | --help]"
+    echo
+    _push_indent
+        _indent
+        echo -n "$(__ansi__ bright blue)to           "
+        echo -n "$(__ansi__ bright yellow)- "
+        echo    "$(__ansi__ bright white)Specifies the installation location,"
 
+        _indent
+        echo -n "             "
+        echo -n "  "
+        echo    "$(__ansi__ bright white)which is the argument that follows."
 
-function __load_directory_finding_functions__() {
+        _indent
+        echo -n "$(__ansi__ bright blue)help, --help "
+        echo -n "$(__ansi__ bright yellow)- "
+        echo    "$(__ansi__ bright white)Displays this information."
+    _pop_indent
 
-    function get_repo_directory() {
-        local d="$(get_path_to_this_script_without_expanding_symlinks)"
-        d="$(dirname "$d")"             # install-scripts
-        dirname "$d"                    # repo directory
-    }
-
-    function get_path_to_this_script_without_expanding_symlinks() {
-        local thisScript="${BASH_SOURCE[0]}"
-        local thisScriptDir="$(dirname "$thisScript")"
-        local pathToThisScript="$(
-            cd "$thisScriptDir" || exit
-            pwd
-        )/$(basename "$thisScript")"
-        echo "$pathToThisScript"
-    }
-
+    __ansi__ reset
 }
 
+# The files that will be symlinked from the install script.
+FILES_TO_SYMLINK=(".bash_profile"
+                  ".bashrc"
+                  ".bash_logout")
 
+# Directories to be copied in order for everything to work post install.
+DIRECTORIES_TO_RECURSIVELY_COPY=("bashrc.d"
+                                 "$(basename "$__MY_INCLUDE_DIR__")"
+                                )
 
-function __load_text_printing_functions__() {
-
-    function __beep__() {
-        echo -ne "\\a"
-    }
-
-    function echo_and_reset() {
-        echo "$@"
-        __ansi__ reset
-    }
-
-    function error_echo() {
-        __ansi__ color red
-        echo_and_reset "$@"
-        false
-    }
-
-    function log_echo() {
-        __ansi__ bright green
-        echo_and_reset "$@"
-    }
-
-    function log_to_console() {
-        local C="$(__ansi__ bright green)"
-        local H="$(__ansi__ bright yellow)"
-        local x="$3"
-
-        [[ ! "$x" ]] && x="..."
-
-        echo_and_reset -n "${C}$1 ${H}$2${C}$x"
-    }
-
-    function colorize_cp_or_ln() {
-        local color1="$(__ansi__ bright red)"
-        local arrowColor="$(__ansi__ bright cyan)"
-        local color2=$color1
-
-        awk -v color1="$color1"          \
-            -v arrowColor="$arrowColor"  \
-            -v color2="$color2"          \
-            -v reset="$(__ansi__ reset)" \
-            '{
-                print color1 $1 " " arrowColor $2 " " color2 $3 reset
-            }'
-    }
-
-    function colorize_rm() {
-        local color1="$(__ansi__ bright red)"
-        local color2="$(__ansi__ bright cyan)"
-
-        awk -v color1="$color1"          \
-            -v color2="$color2"          \
-            -v reset="$(__ansi__ reset)" \
-            '{
-                print color1 $1 " " color2 $2 reset
-            }'
-    }
-
-    function colorize_mv_rename() {
-        local renamed="$(__ansi__ bright red)"
-        local color1="$(__ansi__ bright cyan)"
-        local arrowColor="$(__ansi__ bright yellow)"
-        local color2=$color1
-
-        awk -v renamed="$renamed"        \
-            -v color1="$color1"          \
-            -v arrowColor="$arrowColor"  \
-            -v color2="$color2"          \
-            -v reset="$(__ansi__ reset)" \
-            '{
-                print renamed $1 " " color1 $2 " " arrowColor $3 " " color2 $4 reset
-            }'
-    }
-}
-
-
-
-function __load_file_io_functions__() {
-
-    function nondestructively_symlink_required_files_to_users_home_directory() {
-        local repoDir="$PWD"
-        chdir_and_show "$HOME"
-        local file
-        for file in "${FILES_TO_SYMLINK[@]}"; do
-            nondestructively_dispose_of_old_name_and_make_new_symlink_in_home_directory_using "$repoDir/$file"
-        done
-        chdir_and_show "$repoDir"
-    }
-
-    function chdir_and_show() {
-        local d="$(
-            cd "$1" || exit
-            pwd
-        )"
-        cd "$d"
-
-        echo -n "$(__ansi__ bright blue)Current working directory is now "
-        echo -n "$(__ansi__ bright cyan)$d"
-        echo    "$(__ansi__ bright blue).$(__ansi__ reset)"
-        echo
-    }
-
-    function nondestructively_remove_bash_session_scripts_home() {
-        if is_a_readable_file "$INSTALLATION_HOME_DIR_FILE"; then
-            local backupFileName="${INSTALLATION_HOME_DIR_FILE}.old"
-            log_to_console "Renaming $(__ansi__ bright cyan)${INSTALLATION_HOME_DIR_FILE/#$HOME/\~}$(__ansi__ bright green) to" "${backupFileName/#$HOME/\~}"; echo
-            with_post_delay mv --verbose "$INSTALLATION_HOME_DIR_FILE" "$backupFileName" | colorize_mv_rename
-            echo
-        fi
-    }
-
-    function nondestructively_dispose_of_old_name_and_make_new_symlink_in_home_directory_using() {
-        if [[ "$PWD" != "$HOME" ]]; then
-            echo "In $FUNCNAME:"
-            abort "   This should never happen.  This function only works in $HOME."
-        fi
-
-        local basenameOfNameToDispose="$(basename "$1")"
-
-        if [[ -L "$basenameOfNameToDispose" ]]; then
-            echo -n "$(__ansi__ bright yellow)$basenameOfNameToDispose "
-            echo    "$(__ansi__ bright blue)is a symbolic link."
-            log_to_console "Deleting" "$basenameOfNameToDispose"; echo
-            with_post_delay rm --verbose "$basenameOfNameToDispose" 2> /dev/null | colorize_rm
-
-        elif is_a_readable_file "$basenameOfNameToDispose"; then
-            echo -n "$(__ansi__ bright yellow)$basenameOfNameToDispose "
-            echo    "$(__ansi__ bright blue)is a not a symbolic link."
-            echo    "Renaming $basenameOfNameToDispose to ${basenameOfNameToDispose}.old."
-            with_post_delay mv --verbose "$basenameOfNameToDispose" "${basenameOfNameToDispose}.old"
-
-        else
-            echo -n "$(__ansi__ bright yellow)$basenameOfNameToDispose "
-            echo -n "$(__ansi__ bright blue)not found or not a readable file.  "
-            echo -n "Creating a symbolic link instead."
-        fi
-        echo
-
-        local intendedRelativePath="$(realpath --relative-to="$PWD" "$1")"
-        log_to_console "Creating a symbolic link from" "$basenameOfNameToDispose"; echo
-        with_post_delay ln --verbose --symbolic "$intendedRelativePath" | colorize_cp_or_ln
-        echo
-    }
-
-}
-
-
-
-function __load_bootstrapping_functions__() {
-
-    function __steal_a_few_functions_from_our_repositorys_bash_profile__() {
-        local ourDotBashProfileFullPath="$(get_repo_directory)/.bash_profile"
-        local ourDotBashProfile="$(cat "$ourDotBashProfileFullPath")"
-        local thisShouldBeZero=$?
-
-        if [ $thisShouldBeZero -ne 0 ]; then
-            echo "$ourDotBashProfileFullPath not found."
-            echo "This shouldn't happen.  Try cloning the repository again,"
-            echo "or check the code to the get_repo_directory function for errors."
-            echo
-        else
-            eval "$(echo "$ourDotBashProfile" | parse_unindented_function __bootstrap_initial_functionality_for_dotBashProfile__)"
-            eval "$(echo "$ourDotBashProfile" | parse_unindented_function __load_text_io_functionality__)"
-
-            __bootstrap_initial_functionality_for_dotBashProfile__ "$ourDotBashProfile"
-            __load_text_io_functionality__                         "$ourDotBashProfile"
-        fi
-
-        return $thisShouldBeZero
-    }
-
-    function parse_unindented_function() {
-        sed -n '/^function *'"$1"' *() *{ */,/^}/p'
-    }
-
-}
-
-
-
-DIRECTORY_LIST=("bashrc.d"
-                "bashrc.d-examples"
-                "install-scripts"
-                )
-
-FILE_LIST=(".bash_profile"
-           ".bashrc"
-           ".bash_logout"
-
-           "README.md"
+# The files that need to be copied over for everything to work post install.
+FILE_LIST=("${FILES_TO_SYMLINK[0]}"
+           "${FILES_TO_SYMLINK[1]}"
+           "${FILES_TO_SYMLINK[2]}"
 
            "aliases"
-           "functions"
-           "initial_local_variables"
            "terminal_prompt"
-
-           "${DIRECTORY_LIST[2]}/install"
            )
 
-FILES_TO_SYMLINK=("${FILE_LIST[0]}"
-                  "${FILE_LIST[1]}"
-                  "${FILE_LIST[2]}")
+# Directories relative to repository directory.
+DIRECTORY_LIST=("${DIRECTORIES_TO_RECURSIVELY_COPY[0]}"
+                "${DIRECTORIES_TO_RECURSIVELY_COPY[0]}-examples"
+                "${DIRECTORIES_TO_RECURSIVELY_COPY[1]}"
+                "$(basename "$THIS_SCRIPT_DIR")"
+                )
 
-INSTALLATION_HOME_DIR_FILE="$HOME/.bash_session_scripts_home"
+start "$@"
 
-__load_everything_and_start__ "$@"
-
-unset DIRECTORY_LIST
-unset FILE_LIST
 unset FILES_TO_SYMLINK
-unset INSTALLATION_HOME_DIR_FILE
+unset DIRECTORIES_TO_RECURSIVELY_COPY
+unset FILE_LIST
+unset DIRECTORY_LIST

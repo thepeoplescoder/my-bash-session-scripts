@@ -1,13 +1,4 @@
-# Entry point.
-function __main__() {
-	unset -f "$FUNCNAME"
-
-	cargo_load_dot_cargo_env
-	define_aliases_for_cargo_installed_apps_here
-	cargo_load_root_functionality
-
-	true
-}
+[[ -f "$HOME/.cargo/env" ]] && . "$HOME/.cargo/env"
 
 # This function sets the aliases for apps installed by cargo.
 # to set an alias, use:
@@ -20,6 +11,7 @@ function __main__() {
 #
 function define_aliases_for_cargo_installed_apps_here() {
 	unset -f "$FUNCNAME"
+
 	cargo_set_alias_for 'bat' 'bat.clean' 'bat -SP --style=-changes,-grid,-header-filename,-numbers,-snip'
 }
 
@@ -29,24 +21,6 @@ function cargo_set_alias_for() {
 	is_installed_by_cargo "$1" || return
 	[[ "$3" ]] && shift
 	alias "$1"="$2"
-}
-
-# Loads functionality/restrictions for root user
-function cargo_load_root_functionality() {
-	unset -f "$FUNCNAME"
-	is_root_user || return
-
-	local rustupOwner=$(stat -c "%U" $(which rustup))
-	if ! is_root_user "$rustupOwner"; then
-		local msg="Please run this command from user $(__ansi__ bright green)$rustupOwner$(__ansi__ reset)."
-		alias rustup="echo -e '$msg'"
-	fi
-}
-
-# This loads ~/.cargo/env
-function cargo_load_dot_cargo_env() {
-	unset -f "$FUNCNAME"
-	[[ -f "$HOME/.cargo/env" ]] && . "$HOME/.cargo/env"
 }
 
 # Checks to see if a command is installed by cargo
@@ -63,5 +37,24 @@ function is_installed_in_users_dot_cargo_directory() {
 	[[ "$(which "$1" 2> /dev/null)" == "$HOME/.cargo/bin/$1" ]]
 }
 
-# Run the script
-__main__
+# Loads functionality/restrictions for root user
+function cargo_load_root_functionality() {
+	unset -f "$FUNCNAME"
+	is_root_user || return
+
+	if command_exists 'rustup'; then
+		local rustupPath
+
+		if rustupPath="$(type -P rustup)"; then
+			local rustupOwner=$(stat -c "%U" "$rustupPath")
+
+			if ! is_root_user "$rustupOwner"; then
+				local msg="Please run this command from user $(__ansi__ bright green)$rustupOwner$(__ansi__ reset)."
+				alias rustup="echo -e '$msg'"
+			fi
+		fi
+	fi
+}
+
+define_aliases_for_cargo_installed_apps_here
+cargo_load_root_functionality
