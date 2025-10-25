@@ -26,6 +26,7 @@ function put_the_relevant_repository_files_in() {
     ")"
 
     if ! make_path_if_it_does_not_exist "$INITIAL_PWD" "$1"; then
+        echo "TODO: fix this."
     fi
 
 }
