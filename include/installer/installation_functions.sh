@@ -23,19 +23,38 @@ function do_the_install_in() {
         abort "Invariant not satisfied: current directory is not repository directory $__REPO_DIR__"
     fi
 
-    local installDirectory="$1"
+    local fullPathToInstallDirectory="$1"
     local doTheInstall=true
 
-    if [[ "$(realpath "$installDirectory")" != "$(realpath "$__REPO_DIR__")" ]]; then
-        if ! put_the_relevant_repository_files_in "$installDirectory"; then
-            doTheInstall=false
-        fi
+    local installMode="$(get_install_mode_for "$fullPathToInstallDirectory")"
+
+    if [[ "$installMode" == "repo" ]]; then
+        make_a_backup_of_the_users_
+    else
+        copy_the_needed_files_from_this_repository_to "$fullPathToInstallDirectory"
+        nondestructively_symlink_required_files_to_users_home_directory_from "$fullPathToInstallDirectory"
+        display_success
     fi
 
-    $doTheInstall && (
-        nondestructively_symlink_required_files_to_users_home_directory_from "$installDirectory"
-        display_success
-    )
+    # if [[ "$(realpath "$installDirectory")" != "$(realpath "$__REPO_DIR__")" ]]; then
+    #     if ! put_the_relevant_repository_files_in "$installDirectory"; then
+    #         doTheInstall=false
+    #     fi
+    # fi
+
+    # $doTheInstall && (
+    #     nondestructively_symlink_required_files_to_users_home_directory_from "$installDirectory"
+    #     display_success
+    # )
+}
+
+function get_install_mode_for() {
+    local fullPathToInstallDirectory="$1"
+    if [[ "$(realpath "$fullPathToInstallDirectory")" == "$(realpath "$__REPO_DIR__")" ]]; then
+        echo "repo"
+    else
+        echo "copy"
+    fi
 }
 
 function the_user_wants_to_install_in() {

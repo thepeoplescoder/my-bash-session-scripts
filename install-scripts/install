@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-# Define this now because we're gonna be using this a lot.
+# Define this now because we're gonna be using realpath like this rather extensively.
 alias realpath='realpath --canonicalize-missing'
 
 # Some helpful variables
-THIS_SCRIPT="$(command realpath "${BASH_SOURCE[0]}")"
+THIS_SCRIPT="$(command realpath "${BASH_SOURCE[0]}")"       # but not here. ;)
 THIS_SCRIPT_DIR="$(dirname "$THIS_SCRIPT")"
 __REPO_DIR__="$(dirname "$THIS_SCRIPT_DIR")"
 __MY_INCLUDE_DIR__="$__REPO_DIR__/include"
@@ -115,25 +115,55 @@ function main() {
 }
 
 function display_help() {
-    echo -n "$(__ansi__ bright white)$(basename "$0") "
-    echo -n "$(__ansi__ bright black)[to /path/to/install/location] "
-    echo    "$(__ansi__ bright black)[help | --help]"
-    echo
+    local skip_a_line="<skip-a-line>"
+
+    local -a help_entries_display_order=("--help" "help" "$skip_a_line" "to")
+
+    local -A help_entries=(
+        ["--help"]='help_entry_dash_dash_help'
+        ["help"]='help_entry_help'
+        ["to"]='help_entry_to'
+    )
+
+    local -a help_entry_dash_dash_help=(
+        "Displays this information."
+    )
+    local -a help_entry_help=(
+        "Same as --help."
+    )
+    local -a help_entry_to=(
+        "Specifies the installation location,"
+        "which is the argument that follows."
+        "$(__ansi__ bright red)If not provided, this location will default to"
+        "    $(__ansi__ bright yellow)$INSTALL_DIRECTORY$(__ansi__ reset)"
+    )
+
+    local -a parts_of_the_command=(
+        "$(__ansi__ bright white)$(basename "$0")"
+        "$(__ansi__ bright black)[--help | help]"
+        "$(__ansi__ bright black)[to /path/to/install/location]"
+    )
+
+    (IFS=' '; echo "${parts_of_the_command[*]}") && echo
+
+    local cmd
+    local i
+
     _push_indent
-        _indent
-        echo -n "$(__ansi__ bright blue)help, --help "
-        echo -n "$(__ansi__ bright yellow)- "
-        echo    "$(__ansi__ bright white)Displays this information."
+        for cmd in "${help_entries_display_order[@]}"; do
+            [[ "$cmd" == "$skip_a_line" ]] && echo && continue
 
-        _indent
-        echo -n "$(__ansi__ bright blue)to           "
-        echo -n "$(__ansi__ bright yellow)- "
-        echo    "$(__ansi__ bright white)Specifies the installation location,"
+            local array_name="${help_entries[$cmd]}"
+            local -n lines="$array_name"
 
-        _indent
-        echo -n "             "
-        echo -n "  "
-        echo    "$(__ansi__ bright white)which is the argument that follows."
+            _indent
+            printf "$(__ansi__ bright blue)%9s$(__ansi__ bright yellow) - $(__ansi__ bright white)%s$(__ansi__ reset)\n" \
+                "$cmd" "${lines[0]}"
+
+            for (( i = 1; i < ${#lines[@]}; i++ )); do
+                _indent && printf "%9s   $(__ansi__ bright white)%s$(__ansi__ reset)\n" "" "${lines[i]}"
+            done
+        done
     _pop_indent
 
     __ansi__ reset
