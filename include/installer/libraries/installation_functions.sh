@@ -117,11 +117,11 @@ function fail_fast_do_repo_install_in() {
     local fullPathToInstallDirectory="$1"
 
     for fileName in "${FILES_TO_SYMLINK[@]}"; do
-        fail_fast_make_sure_we_source "$fullPathToInstallDirectory/$fileName" --from "$HOME/$fileName"
+        fail_fast_make_sure_we_destructively_source "$fullPathToInstallDirectory/$fileName" --from "$HOME/$fileName"
     done
 }
 
-function fail_fast_make_sure_we_source() {
+function fail_fast_make_sure_we_destructively_source() {
     local scriptToBeSourced="$1"
     local dummyFrom="$2"
     local fileWhereTheScriptWillBeSourcedFrom="$3"
@@ -139,7 +139,7 @@ function fail_fast_make_sure_we_source() {
             echo    "$(__ansi__ bright blue)."
             __ansi__ reset
         else
-            local command="echo -e \"\\nsource \\\"$scriptToBeSourced\\\"\\n\" >> \"$fileWhereTheScriptWillBeSourcedFrom\""
+            local command="echo -e \"\\nsource \\\"$scriptToBeSourced\\\"\\n\" > \"$fileWhereTheScriptWillBeSourcedFrom\""
             echo "$(__ansi__ bright blue)Running: $(__ansi__ bright yellow)$command$(__ansi__ reset)"
             eval "$command"
             exitCode=$?
