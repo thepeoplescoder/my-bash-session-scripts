@@ -133,17 +133,10 @@ function fail_fast_make_sure_we_destructively_source() {
     dry_echo "$(
         tell_user_that_we_would_source "$scriptToBeSourced" --from "$fileWhereTheScriptWillBeSourcedFrom"
     )" || {
-        if grep -qxF "source \"$scriptToBeSourced\"" "$fileWhereTheScriptWillBeSourcedFrom" &> /dev/null; then
-            echo -n "$(__ansi__ bright blue)The sourcing line already exists in "
-            echo -n "$(__ansi__ bright yellow)$fileWhereTheScriptWillBeSourcedFrom"
-            echo    "$(__ansi__ bright blue)."
-            __ansi__ reset
-        else
-            local command="echo -e \"\\nsource \\\"$scriptToBeSourced\\\"\\n\" > \"$fileWhereTheScriptWillBeSourcedFrom\""
-            echo "$(__ansi__ bright blue)Running: $(__ansi__ bright yellow)$command$(__ansi__ reset)"
-            eval "$command"
-            exitCode=$?
-        fi
+        local command="echo -e \"\\nsource \\\"$scriptToBeSourced\\\"\\n\" > \"$fileWhereTheScriptWillBeSourcedFrom\""
+        echo "$(__ansi__ bright blue)Running: $(__ansi__ bright yellow)$command$(__ansi__ reset)"
+        eval "$command"
+        exitCode=$?
     }
 
     (( exitCode != 0 )) && abort "Fatal error sourcing $scriptToBeSourced from $fileWhereTheScriptWillBeSourcedFrom."
