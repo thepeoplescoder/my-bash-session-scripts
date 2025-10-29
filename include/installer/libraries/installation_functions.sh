@@ -59,16 +59,38 @@ function fail_fast_do_the_install_in() {
 
     fail_fast_make_backups_of_these_session_scripts "${FILES_TO_SYMLINK[@]}"
 
-    local fullPathToInstallDirectory="$1"
-
-    [[ "$installMode" == "copy" ]] && fail_fast_copy_files_required_for_a_working_installation_to "$fullPathToInstallDirectory"
+    if [[ "$installMode" == "copy" ]]; then
+        fail_fast_copy_files_required_for_a_working_installation_to "$fullPathToInstallDirectory"
+    fi
 
     local fileName
+
     for fileName in "${FILES_TO_SYMLINK[@]}"; do
-        fail_fast_make_sure_we_destructively_source "$fullPathToInstallDirectory/$filename" --from "$HOME/$fileName"
+        fail_fast_make_sure_we_destructively_source "$fullPathToInstallDirectory/$fileName" --from "$HOME/$fileName"
     done
 
     display_success
+}
+
+function fail_fast_make_sure_we_destructively_source() {
+    local scriptToBeSourced="$1"
+    local dummyFrom="$2"
+    local fileWhereTheScriptWillBeSourcedFrom="$3"
+
+    expect "$dummyFrom" --is "--from"
+
+    local exitCode=0
+
+    dry_echo "$(
+        tell_user_that_we_would_source "$scriptToBeSourced" --from "$fileWhereTheScriptWillBeSourcedFrom"
+    )" || {
+        local command="echo -e \"\\nsource \\\"$scriptToBeSourced\\\"\\n\" > \"$fileWhereTheScriptWillBeSourcedFrom\""
+        echo "$(__ansi__ bright blue)Running: $(__ansi__ bright yellow)$command$(__ansi__ reset)"
+        eval "$command"
+        exitCode=$?
+    }
+
+    (( exitCode != 0 )) && abort "Fatal error sourcing $scriptToBeSourced from $fileWhereTheScriptWillBeSourcedFrom."
 }
 
 function display_success() {
@@ -114,27 +136,6 @@ function fail_fast_make_backup_if_exists() {
     }
 
     (( exitCode != 0 )) && abort "Fatal error making backup of $fullPath."
-}
-
-function fail_fast_make_sure_we_destructively_source() {
-    local scriptToBeSourced="$1"
-    local dummyFrom="$2"
-    local fileWhereTheScriptWillBeSourcedFrom="$3"
-
-    expect "$dummyFrom" --is "--from"
-
-    local exitCode=0
-
-    dry_echo "$(
-        tell_user_that_we_would_source "$scriptToBeSourced" --from "$fileWhereTheScriptWillBeSourcedFrom"
-    )" || {
-        local command="echo -e \"\\nsource \\\"$scriptToBeSourced\\\"\\n\" > \"$fileWhereTheScriptWillBeSourcedFrom\""
-        echo "$(__ansi__ bright blue)Running: $(__ansi__ bright yellow)$command$(__ansi__ reset)"
-        eval "$command"
-        exitCode=$?
-    }
-
-    (( exitCode != 0 )) && abort "Fatal error sourcing $scriptToBeSourced from $fileWhereTheScriptWillBeSourcedFrom."
 }
 
 function tell_user_that_we_would_source() {
