@@ -1,0 +1,5 @@
+source "$(dirname "${BASH_SOURCE[0]}")/text_io/_.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/arrays.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/commands.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/parsing.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/users.sh"

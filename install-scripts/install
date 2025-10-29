@@ -1,61 +1,61 @@
 #!/usr/bin/env bash
 
-# Define this now because we're gonna be using realpath like this rather extensively.
-alias realpath='realpath --canonicalize-missing'
-
-# Some helpful variables
-THIS_SCRIPT="$(command realpath "${BASH_SOURCE[0]}")"       # but not here. ;)
+THIS_SCRIPT="$(realpath "${BASH_SOURCE[0]}")"
 THIS_SCRIPT_DIR="$(dirname "$THIS_SCRIPT")"
+
 __REPO_DIR__="$(dirname "$THIS_SCRIPT_DIR")"
 __MY_INCLUDE_DIR__="$__REPO_DIR__/include"
-INITIAL_PWD="$(pwd)"
+
+# INITIAL_PWD="$(pwd)"
 
 # Load libraries
 for __library__ in \
     "$__MY_INCLUDE_DIR__/initialization/_.sh" \
-    \
-    "$__MY_INCLUDE_DIR__/libraries/helper_functions.sh" \
-    "$__MY_INCLUDE_DIR__/libraries/text_io/_.sh"  \
-    \
-    "$__MY_INCLUDE_DIR__/installer/file_io.sh" \
-    "$__MY_INCLUDE_DIR__/installer/integrity_checking_functions.sh" \
-    "$__MY_INCLUDE_DIR__/installer/installation_functions.sh"
+    "$__MY_INCLUDE_DIR__/libraries/_.sh" \
+    "$__MY_INCLUDE_DIR__/installer/_.sh"
 do
     source "$__library__" || ( echo "$__library__ not found." && exit 1 )
 done
 unset __library__
 
 # Sane defaults
-INSTALL_DIRECTORY="$HOME/.bash_session_scripts"
+DEFAULT_INSTALL_DIRECTORY="$HOME/.bash_session_scripts"
 
 # Setup/shutdown environment
 function start() {
-    local retval
+    local initialPwd="$(pwd)"
+
+    local firstNonExistentCommand="$(
+        find_first_match_of not_an_existing_command --in rsync realpath
+    )"
+
+    [[ "$firstNonExistentCommand" ]] && echo "$firstNonExistentCommand command required." && return 1
 
     parse_command_line_args_and_call_main "$@"
-    retval=$?
-    cd "$INITIAL_PWD"
+    local retval=$?
 
     echo
- 
-    return $retval
+    cd "$initialPwd"
 }
 
 # Parses command line before calling main
 declare -A ENCOUNTERED_COMMANDS
 function parse_command_line_args_and_call_main() {
+    local installDirectory="$DEFAULT_INSTALL_DIRECTORY"
+
     while [[ "$#" -gt 0 ]]; do
         cmd="$1"
         shift
 
         if [[ "${ENCOUNTERED_COMMANDS[$cmd]}" ]]; then
             case "$cmd" in
-                to)
+                --to)
+                    __ansi__ reset
                     echo -n "Install directory was already set to: "
-                    echo -n "$(__ansi__ bright blue)$INSTALL_DIRECTORY"
-                    echo    "$(__ansi__ reset)"
+                    echo    "$(__ansi__ bright blue)$installDirectory"
+                    __ansi__ reset
                     echo -n "Cannot set install directory with the "
-                    echo -n "$(__ansi__ bright blue)to "
+                    echo -n "$(__ansi__ bright blue)--to "
                     echo    "$(__ansi__ reset)subcommand more than once."
                     return 1
                     ;;
@@ -68,105 +68,120 @@ function parse_command_line_args_and_call_main() {
         fi
 
         case "$cmd" in
-            to)
-                [[ "$1" ]] && INSTALL_DIRECTORY="$1"
-                shift
+            --to)
+                case "$1" in
+                    --*) installDirectory=''            ;;    # Never allow any files starting with -- for simplicity of handling early switches.
+                    *)   installDirectory="$1" && shift ;;
+                esac
                 ;;
-            help|--help)
-                display_help
-                return 0
-                ;;
-            *)
-                echo "Unrecognized command: $cmd"
-                return 1
-                ;;
+
+
+            --dry-run) enable_dry_run                                ;;
+            --help)    display_installer_help "$0"       && return 0 ;;
+            *)         abort "Unrecognized command: $cmd"            ;;
         esac
     done
 
-    # Just to drive the point home as to where we are
-    cd "$INITIAL_PWD"
+    [[ ! "$installDirectory" ]] && abort "No install directory provided."
 
-    if [[ "$(realpath "$INSTALL_DIRECTORY")" == "$(realpath "$HOME")" ]]; then
+    if [[ "$(__realpath "$installDirectory")" == "$(__realpath "$HOME")" ]]; then
         echo "Installation directory cannot be \$HOME."
         return 1
     fi
 
-    main "$(realpath "$INSTALL_DIRECTORY")"
+    __cd "$(__pwd)"     # Initialize dry run aware context for directory changes
+
+    main "$(__realpath "$installDirectory")"
 }
 
 # "Entry" point
 function main() {
     local fullPathToInstallDirectory="$1"
-    local retval=1
 
+    is_dry_run && clear
+
+    dry_echo "$(
+        tell_user_we_would_be_changing_the_working_directory_to "the repository directory" --at "$__REPO_DIR__"
+    )"$'\n'
     chdir_and_show "$__REPO_DIR__"
 
-    check_for_and_exit_if_we_find any_missing_directory_in_list "not found or not a directory."
-    check_for_and_exit_if_we_find any_missing_file_in_list      "not found or not readable."
+    local -a callbacks=('find_first_missing_directory_in_list' 'find_first_missing_file_in_list')
+    local -a  messages=('not found or not a directory.'        'not found or not readable.')
+
+    for (( index=0; index<"${#callbacks[@]}"; index++ )); do
+        local firstMissingItem="$("${callbacks[$index]}")"
+        if [[ "$firstMissingItem" ]]; then
+            error_echo "$firstMissingItem ${messages[$index]}"$'\n'
+            tell_user_to_delete_this_repository_and_clone_it_again
+            return 1
+        fi
+    done
 
     if the_user_wants_to_install_in "$fullPathToInstallDirectory"; then
-        do_the_install_in "$fullPathToInstallDirectory"
-        retval=$?
+        fail_fast_do_the_install_in "$fullPathToInstallDirectory"
     else
-        log_echo "Installation cancelled."
+        log_echo "Installation cancelled." && false
     fi
-
-    return $retval
 }
 
-function display_help() {
-    local skip_a_line="<skip-a-line>"
+function tell_user_we_would_be_changing_the_working_directory_to() {
+    local theLabel="$1"
+    local dummyAt="$2"
+    local theDirectory="$3"
 
-    local -a help_entries_display_order=("--help" "help" "$skip_a_line" "to")
+    expect "$dummyAt" --is "--at"
 
-    local -A help_entries=(
-        ["--help"]='help_entry_dash_dash_help'
-        ["help"]='help_entry_help'
-        ["to"]='help_entry_to'
-    )
-
-    local -a help_entry_dash_dash_help=(
-        "Displays this information."
-    )
-    local -a help_entry_help=(
-        "Same as --help."
-    )
-    local -a help_entry_to=(
-        "Specifies the installation location,"
-        "which is the argument that follows."
-        "$(__ansi__ bright red)If not provided, this location will default to"
-        "    $(__ansi__ bright yellow)$INSTALL_DIRECTORY$(__ansi__ reset)"
-    )
-
-    local -a parts_of_the_command=(
-        "$(__ansi__ bright white)$(basename "$0")"
-        "$(__ansi__ bright black)[--help | help]"
-        "$(__ansi__ bright black)[to /path/to/install/location]"
-    )
-
-    (IFS=' '; echo "${parts_of_the_command[*]}") && echo
-
-    local cmd
-    local i
-
+    echo
     _push_indent
-        for cmd in "${help_entries_display_order[@]}"; do
-            [[ "$cmd" == "$skip_a_line" ]] && echo && continue
-
-            local array_name="${help_entries[$cmd]}"
-            local -n lines="$array_name"
-
+        _indent
+        echo "$(__ansi__ bright blue)Would change the working directory to $theLabel:"
+        _push_indent
             _indent
-            printf "$(__ansi__ bright blue)%9s$(__ansi__ bright yellow) - $(__ansi__ bright white)%s$(__ansi__ reset)\n" \
-                "$cmd" "${lines[0]}"
-
-            for (( i = 1; i < ${#lines[@]}; i++ )); do
-                _indent && printf "%9s   $(__ansi__ bright white)%s$(__ansi__ reset)\n" "" "${lines[i]}"
-            done
-        done
+            echo "$(__ansi__ bright yellow)$theDirectory"
+        _pop_indent
     _pop_indent
+}
 
-    __ansi__ reset
+function __realpath() {
+    realpath --canonicalize-missing "$@"
+}
+
+function __cd() {
+    local destinationDirectory
+
+    [[ ! "$1" ]] && return 1
+
+    if is_dry_run; then
+        case "$1" in
+            /*) destinationDirectory="$1";;
+            *)  destinationDirectory="$(__realpath "$(__pwd)/$1")" ;;
+        esac
+    else
+        destinationDirectory="$(__realpath "$1")" || return $?
+    fi
+
+    [[ ! "$destinationDirectory"        ]] && return 1
+    [[   "$destinationDirectory" != "/" ]] && destinationDirectory="${destinationDirectory%/}"
+
+    dry_echo "$(__ansi__ bright blue)Would cd to $(__ansi__ bright yellow)$destinationDirectory$(__ansi__ reset)"
+
+    if is_dry_run; then
+        CURRENT_WORKING_DIRECTORY="$destinationDirectory"
+    else
+        cd "$destinationDirectory" && CURRENT_WORKING_DIRECTORY="$destinationDirectory"
+    fi
+}
+
+function __pwd() {
+    if [ ! -v CURRENT_WORKING_DIRECTORY ]; then
+        CURRENT_WORKING_DIRECTORY="$(__realpath "$(pwd)")"
+    fi
+
+    if is_dry_run; then
+        echo "$CURRENT_WORKING_DIRECTORY"
+    else
+        pwd
+    fi
 }
 
 # The files that will be symlinked from the install script.

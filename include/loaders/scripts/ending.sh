@@ -5,6 +5,8 @@ fi
 unset_on_exit __LOADERS_SLASH_SCRIPTS_SLASH_ENDING_DOT_SH__
 __LOADERS_SLASH_SCRIPTS_SLASH_ENDING_DOT_SH__="$(get_this_file_name)"
 
+source "$__MY_INCLUDE_DIR__/libraries/_.sh"
+
 __add_username_label_if_logged_in_as__ root
 echo "$(__theme__ normal)Loading $(__ansi__ bright green)ending$(__theme__ normal) scripts...$(__ansi__ reset)"
 

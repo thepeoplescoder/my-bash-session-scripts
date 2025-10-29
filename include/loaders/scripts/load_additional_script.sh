@@ -74,6 +74,7 @@ elif is_emittable "$1"; then
         if [[
             "$__the_current_output_line_from_the_current_file_without_tag_delimiter__" == "$__the_tag_name_for_the_current_line__"
         ]]; then
+            echo "$(__ansi__ bright red)Unknown or improperly used tag: $(__ansi__ reset)$__the_tag_name_for_the_current_line__"
             continue
         fi
 

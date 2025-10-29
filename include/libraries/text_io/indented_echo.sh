@@ -19,11 +19,6 @@ function _indent() {
 	done
 }
 
-unset_on_exit iecho
-function iecho() {
-	_indent; echo "$@"
-}
-
 unset_on_exit _push_indent
 function _push_indent() {
 	__iecho_INDENT=$(( __iecho_INDENT + 1 ))

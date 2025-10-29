@@ -10,7 +10,7 @@ ADDITIONAL_SCRIPTS_DIRECTORY="bashrc.d"     # Then any script in this directory 
 ENDING_SCRIPTS=("terminal_prompt")          # Finally, these scripts are loaded.
 
 SOURCEABLE_EXTENSIONS=("sh" "bash")
-EMITTABLE_EXTENSIONS=("py" "js" "ts")
+EMITTABLE_EXTENSIONS=("py" "js" "ts" "pl" "rb")
 
 unset_on_exit STARTING_SCRIPTS
 unset_on_exit ADDITIONAL_SCRIPTS_DIRECTORY

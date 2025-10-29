@@ -2,13 +2,9 @@ if [[ -v __INSTALLER_SLASH_ERRORS_DOT_SH__ ]]; then
     return 0
 fi
 
-__INSTALLER_SLASH_ERRORS_DOT_SH__="$(realpath "${BASH_SOURCE[0]}")"
+__INSTALLER_SLASH_ERRORS_DOT_SH__="$(get_this_file_name)"
 
 for __library__ in \
-    "$__MY_INCLUDE_DIR__/initialization/_.sh" \
-    \
-    "$__MY_INCLUDE_DIR__/libraries/text_io/_.sh" \
-    \
     "$(dirname "${BASH_SOURCE[0]}")/text_and_color.sh"
 do
     source "$__library__" || ( echo "$__library__ not found." && exit 1 )
@@ -22,10 +18,9 @@ function complain_that_we_are_not_directly_in_home() {
     error_echo
 }
 
-function tell_user_to_run_script_in_repo_directory_and_exit() {
-    error_echo "Please run this script in the directory that the repository "
-    error_echo "was cloned from."
-    error_echo
+function tell_user_to_delete_this_repository_and_clone_it_again() {
+    error_echo "It appears as if your clone of the repository was compromised."
+    error_echo "Please delete $__REPO_DIR__ and rerun the install script from a fresh clone."
 }
 
 function abort() {

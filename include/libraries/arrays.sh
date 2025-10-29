@@ -1,9 +1,9 @@
-if [[ -v __LIBRARIES_ARRAYS_DOT_SH__ ]]; then
+if [[ -v __LIBRARIES_SLASH_ARRAYS_DOT_SH__ ]]; then
 	return 0
 fi
 
-unset_on_exit __LIBRARIES_ARRAYS_DOT_SH__
-__LIBRARIES_ARRAYS_DOT_SH__=$(get_this_file_name)
+unset_on_exit __LIBRARIES_SLASH_ARRAYS_DOT_SH__
+__LIBRARIES_SLASH_ARRAYS_DOT_SH__=$(get_this_file_name)
 
 unset_on_exit exists_in_array
 function exists_in_array() {
@@ -18,12 +18,13 @@ function array_find() {
 
 	local currentItem
 	local index=0
+
 	for currentItem in "${haystack[@]}"; do
 		if [[ "$currentItem" == "$needle" ]]; then
 			echo "$index"
 			return 0
 		fi
-		index=$(( $index + 1 ))
+		(( index++ ))
 	done
 
 	return 1

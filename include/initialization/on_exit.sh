@@ -4,20 +4,24 @@ if declare -f on_exit &> /dev/null; then
 fi
 
 function on_exit() {
-	[[ ! "${FUNCNAME[1]}" ]] && echo "This function must be called from the top level." && return 1
+	if ! is_top_level_or_sourced; then
+		echo "This function must be called from the top level."
+		return 1
+	fi
 
 	local basenameOfCaller="$(basename "${BASH_SOURCE[1]}")"
 
-	! [[ "$basenameOfCaller" == ".bash_profile" || "$basenameOfCaller" == ".bashrc" ]] \
-		&& echo "This function can only be called from .bash_profile or .bashrc."      \
-		&& return 1
+	if ! [[ "$basenameOfCaller" == ".bash_profile" || "$basenameOfCaller" == ".bashrc" ]]; then
+		echo "This function can only be called from .bash_profile or .bashrc."
+		return 1
+	fi
 
-	__on_exit__NUMBER_OF_CALLS=$(( $__on_exit__NUMBER_OF_CALLS + 1 ))
+	(( __on_exit__NUMBER_OF_CALLS++ ))
 
 	[[ -v __MY_DOT_BASH_PROFILE__ && __on_exit__NUMBER_OF_CALLS -lt 2 ]] && return
 
 	unset -f "$FUNCNAME"
-	__run_cleanup__ &> /dev/null
+	__run_cleanup__
 	echo
 
 	unset __on_exit__NUMBER_OF_CALLS

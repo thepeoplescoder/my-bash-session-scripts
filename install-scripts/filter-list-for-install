@@ -1,0 +1,13 @@
+- .git/
+- .git/**
+
++ bashrc.d/
+- bashrc.d/**
+
++ include/aliases/
++ include/initialization/
++ include/libraries/
++ include/loaders/
+- include/*
+
+- install-scripts/
