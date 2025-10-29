@@ -84,6 +84,11 @@ function fail_fast_make_sure_we_destructively_source() {
     dry_echo "$(
         tell_user_that_we_would_source "$scriptToBeSourced" --from "$fileWhereTheScriptWillBeSourcedFrom"
     )" || {
+        # A backup of the contents of this file should already have been created.
+        # If this is a symbolic link, we need to get rid of it so we don't accidentally overwrite
+        # where this file actually leads to.....causing an "infinite" loop until segfault on session start.
+        [[ -L "$fileWhereTheScriptWillBeSourcedFrom" ]] && rm "$fileWhereTheScriptWillBeSourcedFrom"
+
         local command="echo -e \"\\nsource \\\"$scriptToBeSourced\\\"\\n\" > \"$fileWhereTheScriptWillBeSourcedFrom\""
         echo "$(__ansi__ bright blue)Running: $(__ansi__ bright yellow)$command$(__ansi__ reset)"
         eval "$command"
