@@ -59,11 +59,14 @@ function fail_fast_do_the_install_in() {
 
     fail_fast_make_backups_of_these_session_scripts "${FILES_TO_SYMLINK[@]}"
 
-    case "$installMode" in
-        repo) fail_fast_do_repo_install_in "$fullPathToInstallDirectory"     ;;
-        copy) fail_fast_do_copy_install_in "$fullPathToInstallDirectory"     ;;
-        *)    abort "Install mode is $installMode.  This should not happen." ;;
-    esac
+    local fullPathToInstallDirectory="$1"
+
+    [[ "$installMode" == "copy" ]] && fail_fast_copy_files_required_for_a_working_installation_to "$fullPathToInstallDirectory"
+
+    local fileName
+    for fileName in "${FILES_TO_SYMLINK[@]}"; do
+        fail_fast_make_sure_we_destructively_source "$fullPathToInstallDirectory/$filename" --from "$HOME/$fileName"
+    done
 
     display_success
 }
@@ -113,14 +116,6 @@ function fail_fast_make_backup_if_exists() {
     (( exitCode != 0 )) && abort "Fatal error making backup of $fullPath."
 }
 
-function fail_fast_do_repo_install_in() {
-    local fullPathToInstallDirectory="$1"
-
-    for fileName in "${FILES_TO_SYMLINK[@]}"; do
-        fail_fast_make_sure_we_destructively_source "$fullPathToInstallDirectory/$fileName" --from "$HOME/$fileName"
-    done
-}
-
 function fail_fast_make_sure_we_destructively_source() {
     local scriptToBeSourced="$1"
     local dummyFrom="$2"
@@ -153,17 +148,6 @@ function tell_user_that_we_would_source() {
     echo -n "$(__ansi__ bright yellow)$scriptToBeSourced "
     echo -n "$(__ansi__ bright blue)from "
     echo -n "$(__ansi__ bright yellow)$fileWhereTheScriptWillBeSourcedFrom"
-}
-
-function fail_fast_do_copy_install_in() {
-    local fullPathToInstallDirectory="$1"
-
-    fail_fast_copy_files_required_for_a_working_installation_to "$fullPathToInstallDirectory"
-
-    local fileName
-    for fileName in "${FILES_TO_SYMLINK[@]}"; do
-        fail_fast_symlink "$HOME/$fileName" --to "$fullPathToInstallDirectory/$fileName"
-    done
 }
 
 function fail_fast_symlink() {
