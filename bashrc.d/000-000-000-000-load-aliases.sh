@@ -1,0 +1,5 @@
+# Load internal aliases
+source "$__MY_INCLUDE_DIR__/aliases/_.sh"
+
+# Load user's ~/.bash_aliases if it exists.
+[[ -f ~/.bash_aliases ]] && . ~/.bash_aliases

@@ -1,2 +1,11 @@
 *
+
 !.gitignore
+
+!examples/
+!examples/*
+
+!000-000-000-000-load-aliases.sh
+!000-000-000-001-load-.bash_functions-if-it-exists.sh
+
+!ZZZ-ZZZ-ZZZ-998-define-__unprintable__-for-terminal-prompt.sh

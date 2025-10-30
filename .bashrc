@@ -28,9 +28,9 @@ _push_indent
 
     source "$__MY_INCLUDE_DIR__/loaders/environment_variables/_.sh"
 
-    source "$__MY_INCLUDE_DIR__/loaders/scripts/starting.sh"
+    # source "$__MY_INCLUDE_DIR__/loaders/scripts/starting.sh"
     source "$__MY_INCLUDE_DIR__/loaders/scripts/additional.sh"
-    source "$__MY_INCLUDE_DIR__/loaders/scripts/ending.sh"
+    # source "$__MY_INCLUDE_DIR__/loaders/scripts/ending.sh"
 
 _pop_indent
 
