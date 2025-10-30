@@ -1,6 +1,0 @@
-#
-# functions
-#
-
-# Load user's ~/.bash_functions if it exists.
-[[ -f ~/.bash_aliases ]] && . ~/.bash_aliases

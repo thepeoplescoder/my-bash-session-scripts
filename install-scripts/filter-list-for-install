@@ -2,7 +2,6 @@
 - .git/**
 
 + bashrc.d/
-- bashrc.d/**
 
 + include/aliases/
 + include/initialization/

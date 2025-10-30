@@ -8,10 +8,10 @@ __LOADERS_SLASH_SCRIPTS_SLASH_ADDITIONAL_DOT_SH__="$(get_this_file_name)"
 source "$__MY_INCLUDE_DIR__/libraries/_.sh"
 
 __add_username_label_if_logged_in_as__ root
-echo "$(__theme__ normal)Loading $(__ansi__ bright green)additional$(__theme__ normal) scripts...$(__ansi__ reset)"
+echo "$(__ansi__ color cyan)Loading scripts...$(__ansi__ reset)"
 
 unset_on_exit ADDITIONAL_SCRIPTS_LOCATION
-ADDITIONAL_SCRIPTS_LOCATION="$BASH_SESSION_SCRIPTS_HOME/$ADDITIONAL_SCRIPTS_DIRECTORY"
+ADDITIONAL_SCRIPTS_LOCATION="$BASH_SESSION_SCRIPTS_HOME/bashrc.d"
 
 if [[ -d "$ADDITIONAL_SCRIPTS_LOCATION" ]]; then
 	_push_indent
@@ -22,7 +22,7 @@ if [[ -d "$ADDITIONAL_SCRIPTS_LOCATION" ]]; then
 
 			__add_username_label_if_logged_in_as__ root
 			echo -n "$(__theme__ normal)Loading "
-			echo -n "$(__theme__ highlight)$(basename $shellScript)"
+			echo -n "$(__ansi__ bright green)$(basename $shellScript)"
 			echo    "$(__theme__ normal)...$(__ansi__ reset)"
 			pushd "$PWD" > /dev/null
 
@@ -36,4 +36,4 @@ if [[ -d "$ADDITIONAL_SCRIPTS_LOCATION" ]]; then
 fi
 
 __add_username_label_if_logged_in_as__ root
-echo "$(__ansi__ bright green)Additional$(__theme__ normal) scripts loaded.$(__ansi__ reset)"
+echo "$(__ansi__ color cyan)Done!$(__ansi__ reset)"

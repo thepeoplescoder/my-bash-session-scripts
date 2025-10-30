@@ -27,10 +27,7 @@ echo "$(__theme__ normal)Entering $(__theme__ highlight)$(get_this_file_name_dis
 _push_indent
 
     source "$__MY_INCLUDE_DIR__/loaders/environment_variables/_.sh"
-
-    # source "$__MY_INCLUDE_DIR__/loaders/scripts/starting.sh"
-    source "$__MY_INCLUDE_DIR__/loaders/scripts/additional.sh"
-    # source "$__MY_INCLUDE_DIR__/loaders/scripts/ending.sh"
+    source "$__MY_INCLUDE_DIR__/loaders/scripts/load-everything-in-bashrc.d.sh"
 
 _pop_indent
 
