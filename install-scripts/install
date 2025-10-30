@@ -198,14 +198,10 @@ DIRECTORIES_TO_RECURSIVELY_COPY=("bashrc.d"
 FILE_LIST=("${FILES_TO_SYMLINK[0]}"
            "${FILES_TO_SYMLINK[1]}"
            "${FILES_TO_SYMLINK[2]}"
-
-           "aliases"
-           "terminal_prompt"
            )
 
 # Directories relative to repository directory.
 DIRECTORY_LIST=("${DIRECTORIES_TO_RECURSIVELY_COPY[0]}"
-                "${DIRECTORIES_TO_RECURSIVELY_COPY[0]}-examples"
                 "${DIRECTORIES_TO_RECURSIVELY_COPY[1]}"
                 "$(basename "$THIS_SCRIPT_DIR")"
                 )
