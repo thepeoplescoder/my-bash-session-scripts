@@ -16,3 +16,4 @@ function expect() {
     [[ "$dummyIs" == "--is"           ]] || abort "${FUNCNAME[0]}: --is expected."
     [[ "$value"   == "$expectedValue" ]] || abort "${FUNCNAME[1]} $expectedValue expected."
 }
+
