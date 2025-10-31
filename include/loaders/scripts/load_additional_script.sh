@@ -1,6 +1,3 @@
-__original_args__=("$@")
-set --
-
 if is_sourceable "$1"; then
     source "$1"
 
@@ -97,6 +94,3 @@ elif is_emittable "$1"; then
     unset __the_current_files_stdout_contents_after_running_it_as_a_process__
     unset __the_emitter_output_is_guaranteed_to_be_visible__
 fi
-
-set -- "${__original_args__[@]}"
-unset __original_args__
