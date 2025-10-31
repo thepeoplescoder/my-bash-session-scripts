@@ -1,1 +1,1 @@
-source /usr/share/ble.sh
+source /usr/share/blesh/ble.sh
