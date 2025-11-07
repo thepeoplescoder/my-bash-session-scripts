@@ -1,5 +1,11 @@
 [[ -f "$HOME/.cargo/env" ]] && . "$HOME/.cargo/env"
 
+if [[ -f "$HOME/.cargo/env" ]]; then
+	source "$HOME/.cargo/env"
+else
+	prepend_to_PATH_if_it_exists "$HOME/.cargo/bin"
+fi
+
 # This function sets the aliases for apps installed by cargo.
 # to set an alias, use:
 #
@@ -18,7 +24,7 @@ function define_aliases_for_cargo_installed_apps_here() {
 # Wrapper to set an alias for an app installed by cargo.
 unset_on_exit cargo_set_alias_for
 function cargo_set_alias_for() {
-	is_installed_by_cargo "$1" || return
+	command_exists "$1" || return
 	[[ "$3" ]] && shift
 	alias "$1"="$2"
 }
