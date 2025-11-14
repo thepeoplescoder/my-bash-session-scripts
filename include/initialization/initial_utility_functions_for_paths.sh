@@ -39,36 +39,33 @@ function get_full_path_without_expanding_symlinks() {
     local p="$1"
     shift
 
+    local d="$p" b=""
+
+    if is_a_readable_file "$p"; then
+        d="$(  dirname  "$p" )"
+        b="/$( basename "$p" )"
+    elif ! is_a_directory "$p"; then
+        echo "$p" && return
+    fi
+
     local -a cd_callback=("cd")
     if [ "$1" ]; then
         cd_callback=("$@")
     fi
 
-    if is_a_directory "$p"; then
-        echo "$(
-            "${cd_callback[@]}" "$p" || exit
-            pwd
-        )"
-
-    elif is_a_readable_file "$p"; then
-        echo "$(
-            "${cd_callback[@]}" "$(dirname "$p")" || exit
-            pwd
-        )/$(basename "$p")"
-
-    else
-        echo "$p"
-    fi
+    echo "$(
+        "${cd_callback[@]}" "$d" || exit
+        pwd
+    )$b"
 }
 
+unset_on_exit get_displayable_path
 function get_displayable_path() {
     _fix "$(get_full_path_without_expanding_symlinks "$@")"
 }
 
 unset_on_exit get_this_file_name_displayable
 function get_this_file_name_displayable() {
-	# local result="$(get_path_keep_symlinks_to "${BASH_SOURCE[1]}")"
-	# echo "$(_fix "$result")"
 	_fix "$(get_path_keep_symlinks_to "${BASH_SOURCE[1]}")"
 }
 
@@ -110,15 +107,12 @@ function is_sourceable_or_emittable() {
 
 unset_on_exit is_sourceable
 function is_sourceable() {
-	exists_in_array "$(get_extension "$1")" "${SOURCEABLE_EXTENSIONS[@]}" && is_a_readable_file "$1"
+	is_a_readable_file "$1" && exists_in_array "$(get_extension_without_dot "$1")" "${SOURCEABLE_EXTENSIONS[@]}"
 }
 
 unset_on_exit is_emittable
 function is_emittable() {
-	if exists_in_array "$(get_extension "$1")" "${EMITTABLE_EXTENSIONS[@]}"; then
-		return 0
-	fi
-	is_executable "$1" && [[ -f "$1" ]]
+    is_a_file "$1" && ( exists_in_array "$(get_extension_without_dot "$1")" "${EMITTABLE_EXTENSIONS[@]}" || is_exectuable "$1" )
 }
 
 unset_on_exit is_executable
@@ -126,7 +120,13 @@ function is_executable() {
 	[ -x "$1" ]
 }
 
-unset_on_exit get_extension
-function get_extension() {
-	echo "${1##*.}"
+unset_on_exit get_extension_without_dot
+function get_extension_without_dot() {
+    local filename="$1"
+    if [[
+        "$filename" == .*.* ||
+        ( "$filename" != .* && "$filename" == *.* )
+    ]]; then
+        echo "${filename##*.}"
+    fi
 }

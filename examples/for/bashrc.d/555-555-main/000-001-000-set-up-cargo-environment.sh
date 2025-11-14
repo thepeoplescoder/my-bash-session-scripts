@@ -27,37 +27,27 @@ function cargo_set_alias_for() {
 	alias "$1"="$2"
 }
 
-# Checks to see if a command is installed by cargo
-# as of now, it is defined by checking if the executable is in
-# the user's home directory.
-unset_on_exit is_installed_by_cargo
-function is_installed_by_cargo() {
-	is_installed_in_users_dot_cargo_directory "$@"
-}
-
-# Checks to see if a command is installed in $HOME/.cargo/bin
-unset_on_exit is_installed_in_users_dot_cargo_directory
-function is_installed_in_users_dot_cargo_directory() {
-	[[ "$(which "$1" 2> /dev/null)" == "$HOME/.cargo/bin/$1" ]]
-}
-
 # Loads functionality/restrictions for root user
 function cargo_load_root_functionality() {
 	unset -f "$FUNCNAME"
-	is_root_user || return
 
-	if command_exists 'rustup'; then
-		local rustupPath
+	! is_root_user            && return
+	! command_exists 'rustup' && return
 
-		if rustupPath="$(type -P rustup)"; then
-			local rustupOwner=$(stat -c "%U" "$rustupPath")
+	local rustupPath
 
-			if ! is_root_user "$rustupOwner"; then
-				local msg="Please run this command from user $(__ansi__ bright green)$rustupOwner$(__ansi__ reset)."
-				alias rustup="echo -e '$msg'"
-			fi
-		fi
-	fi
+	! rustupPath="$(type -P rustup)" && return
+
+	local rustupOwner=$(stat -c "%U" "$rustupPath")
+
+	is_root_user "$rustupOwner" && return
+
+	local msg="$(
+		echo -n "Please run this command from user "
+		echo -n "$(__ansi__ bright green)$rustupOwner"
+		echo    "$(__ansi__ reset)."
+	)"
+	alias rustup="echo -e '$msg'"
 }
 
 define_aliases_for_cargo_installed_apps_here

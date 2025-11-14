@@ -2,22 +2,6 @@ if is_sourceable "$1"; then
     source "$1"
 
 elif is_emittable "$1"; then
-    # __the_current_files_stdout_contents_after_running_it_as_a_process__=''
-
-    # if is_executable "$1"; then
-    #     __the_current_files_stdout_contents_after_running_it_as_a_process__="$(
-    #         "$1"
-    #     )"
-    # else
-    #     unset_on_exit __the_current_interpreter_for_this_file__
-    #     read -r -a __the_current_interpreter_for_this_file__ <<< "$(get_interpreter_for "$1")"
-    #     command_exists "${__the_current_interpreter_for_this_file__[0]}" || return
-        
-    #     __the_current_files_stdout_contents_after_running_it_as_a_process__="$(
-    #         "${__the_current_interpreter_for_this_file__[@]}" "$1"
-    #     )"
-    # fi
-
     __the_current_files_stdout_contents_after_running_it_as_a_process__="$(
         if is_executable "$1"; then
             "$1"
@@ -85,11 +69,10 @@ elif is_emittable "$1"; then
 
     done <<< "$__the_current_files_stdout_contents_after_running_it_as_a_process__"
 
-    unset __the_tag_name_for_the_current_line__
-    unset __the_payload_for_the_current_line__
-
     (( __the_emitter_output_is_guaranteed_to_be_visible__ )) && echo
 
+    unset __the_tag_name_for_the_current_line__
+    unset __the_payload_for_the_current_line__
     unset __the_emitter_tag_delimiter__
     unset __the_current_files_stdout_contents_after_running_it_as_a_process__
     unset __the_emitter_output_is_guaranteed_to_be_visible__

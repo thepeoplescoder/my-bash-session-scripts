@@ -12,11 +12,7 @@ function command_exists() {
 
 unset_on_exit get_interpreter_for
 function get_interpreter_for() {
-    case "$1" in
-        *.py) echo "python"   ;;
-        *.js) echo "node"     ;;
-        *.ts) echo "deno run" ;;
-        *.rb) echo "ruby"     ;;
-        *.pl) echo "perl"     ;;
-    esac
+    local target="$__MY_INCLUDE_DIR__/../extensions-to-runners/$(get_extension_without_dot "$1")"
+
+    [[ -f "$target" ]] && cat "$target"
 }

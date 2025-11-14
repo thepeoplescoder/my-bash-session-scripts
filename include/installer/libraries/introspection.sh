@@ -13,7 +13,7 @@ unset __library__
 
 function get_install_mode_for() {
     local fullPathToInstallDirectory="$1"
-    if [[ "$(realpath "$fullPathToInstallDirectory")" == "$(realpath "$__REPO_DIR__")" ]]; then
+    if [[ "$(__realpath "$fullPathToInstallDirectory")" == "$(__realpath "$__REPO_DIR__")" ]]; then
         echo "repo"
     else
         echo "copy"

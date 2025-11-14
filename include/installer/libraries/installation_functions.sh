@@ -60,7 +60,8 @@ function fail_fast_do_the_install_in() {
     fail_fast_make_backups_of_these_session_scripts "${FILES_TO_SYMLINK[@]}"
 
     if [[ "$installMode" == "copy" ]]; then
-        fail_fast_copy_files_required_for_a_working_installation_to "$fullPathToInstallDirectory"
+        abort "Copy install unsupported for the time being."
+        # fail_fast_copy_files_required_for_a_working_installation_to "$fullPathToInstallDirectory"
     fi
 
     local fileName
