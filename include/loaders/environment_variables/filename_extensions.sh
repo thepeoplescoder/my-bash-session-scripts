@@ -16,11 +16,7 @@ EMITTABLE_EXTENSIONS=()
 function generate_SOURCEABLE_EXTENSIONS_and_EMITTABLE_EXTENSIONS() {
     unset -f "$FUNCNAME"
 
-    local directory="$(dirname "$__MY_INCLUDE_DIR__")/extensions-to-runners"
-
-    local file
-    local runner
-    local extension
+    local file directory="$(dirname "$__MY_INCLUDE_DIR__")/extensions-to-runners"
 
     for file in "$directory"/*; do
         local extension="$( basename "$file" )"; [[ "$extension" == .* ]] && continue
@@ -31,10 +27,7 @@ function generate_SOURCEABLE_EXTENSIONS_and_EMITTABLE_EXTENSIONS() {
             continue
         fi
 
-        case "$runner" in
-            source|.) local -n array=SOURCEABLE_EXTENSIONS ;;
-            *)        local -n array=EMITTABLE_EXTENSIONS  ;;
-        esac
+        local -n array="$( [[ "$runner" =~ ^(source|\.)$ ]] && echo "SOURCEABLE" || echo "EMITTABLE" )"_EXTENSIONS
 
         array+=("$extension")
     done
