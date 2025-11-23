@@ -1,6 +1,6 @@
 unset_on_exit __dircolorsCommand
-__dircolorsCommand="dircolors"
-command_exists "$__dircolorsCommand" || __dircolorsCommand="gdircolors"
+__dircolorsCommand="gdircolors"
+command_exists "$__dircolorsCommand" || __dircolorsCommand="dircolors"
 command_exists "$__dircolorsCommand" || return 1
 
 function __main__() {
