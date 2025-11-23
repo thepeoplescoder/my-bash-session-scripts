@@ -57,4 +57,16 @@ function unset_on_exit() {
 
 ###########################################################
 
+unset_on_exit __OS__
+__OS__="$(
+	case "$(uname -s)" in
+		Linux)          echo "linux"     ;;
+		*BSD|DragonFly) echo "bsd"       ;;
+		Darwin)         echo "macos"     ;;
+		*)              echo "<unknown>" ;;
+	esac
+)"
+
+###########################################################
+
 unset_on_exit unset_on_exit
