@@ -1,7 +1,10 @@
+unset_on_exit __dircolorsCommand
+__dircolorsCommand="dircolors"
+command_exists "$__dircolorsCommand" || __dircolorsCommand="gdircolors"
+command_exists "$__dircolorsCommand" || return 1
+
 function __main__() {
 	unset -f "$FUNCNAME"
-
-	command_exists 'dircolors' || return 1
 
 	local dircolorsFile="$HOME/.dircolors"
 
@@ -13,12 +16,15 @@ function __main__() {
 
 function create_this_file_if_it_does_not_exist() {
 	unset -f "$FUNCNAME"
-	[[ ! -f "$1" ]] && dircolors --print-database > "$1"
+	[[ ! -f "$1" ]] && "$__dircolorsCommand" --print-database > "$1"
 }
 
 function set_LS_COLORS_using_this_file {
 	unset -f "$FUNCNAME"
-	eval "$(dircolors "$1")"
+	# eval "$(dircolors "$1")"
+	"$__dircolorsCommand" "$1"
+	echo
+	[[ "$__OS__" == "bsd" ]] && command_exists "opendircolors" && opendircolors -b "$1"
 }
 
 __main__
