@@ -16,12 +16,14 @@ The install script will create backups of `~/.bashrc`, `~/.bash_profile`, and `~
    ```
 2. Restart your terminal.
 
+For simplicity, the rest of this file assumes that this repository was cloned in `~/.bash_session_scripts`.
+
 ## Post Installation
 After installation, you will notice that `~/.bashrc`, `~/.bash_profile`, and `~/.bash_logout` will be overwritten to contain one line of code `source`ing their corresponding file inside of `~/.bash_session_scripts`, surrounded by a line of whitespace on top and on bottom.
 
 ## How Everything Works
 
-Each session script (`.bashrc`, `.bash_profile`, `.bash_logout`) inside of `~/.bash_session_scripts` corresponds to a `.d` directory:
+Each session script (`.bashrc`, `.bash_profile`, `.bash_logout`) inside of `~/.bash_session_scripts` corresponds to a `.d` directory also located within:
 
 * `.bashrc` corresponds to `bashrc.d`
 * `.bash_profile` corresponds to `bash_profile.d`
