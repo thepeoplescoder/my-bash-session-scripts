@@ -30,6 +30,6 @@ Each session script (`.bashrc`, `.bash_profile`, `.bash_logout`) inside of `~/.b
 And each script does the same thing:
 
 * Each script looks in its corresponding directory, and *only* looks at the visible directories in lexicographical order.
-   * For each of these directories, each visible file (and only each visible file) is examined in lexicographical order.  If it is executable, then it is ran as an executable file.  Otherwise, the file's extension is looked at, and based on the files in `~/.bash_session_scripts/extensions-to-runners`, and appropriate command is used to run the file.
+   * For each of these directories, each visible file (and only each visible file) is examined in lexicographical order.  If it is executable, then it is ran as an executable file.  Otherwise, the file's extension is looked at, and based on the files in `~/.bash_session_scripts/extensions-to-runners`, an appropriate command is used to run the file.
 
 How executables are processed will be explained in another section.
