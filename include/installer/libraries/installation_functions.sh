@@ -23,16 +23,16 @@ unset __library__
 
 function the_user_wants_to_install_in() {
     __beep__
-    show_the_installation_directory_and_installation_mode_for "$1"
+    # show_the_installation_directory_and_installation_mode_for "$1"    # no longer has meaning
     show_warning_message
     ask_user_if_they_are_sure_about_continuing
 }
 
-function show_the_installation_directory_and_installation_mode_for() {
-    echo "$(__ansi__ bright white)Installing to $(__ansi__ bright green)$1"
-    echo "$(__ansi__ bright white)Installation mode: $(__ansi__ bright cyan)$(get_install_mode_for "$1")"
-    echo
-}
+# function show_the_installation_directory_and_installation_mode_for() {
+#     echo "$(__ansi__ bright white)Installing to $(__ansi__ bright green)$1"
+#     echo "$(__ansi__ bright white)Installation mode: $(__ansi__ bright cyan)$(get_install_mode_for "$1")"
+#     echo
+# }
 
 function ask_user_if_they_are_sure_about_continuing() {
     __ansi__ bright red
@@ -60,7 +60,8 @@ function fail_fast_do_the_install_in() {
     fail_fast_make_backups_of_these_session_scripts "${FILES_TO_SYMLINK[@]}"
 
     if [[ "$installMode" == "copy" ]]; then
-        abort "Copy install unsupported for the time being."
+        abort "Copy install no longer supported."
+        # abort "Copy install unsupported for the time being."
         # fail_fast_copy_files_required_for_a_working_installation_to "$fullPathToInstallDirectory"
     fi
 
@@ -183,45 +184,44 @@ function fail_fast_symlink() {
     (( exitCode != 0 )) && abort "Fatal error symlinking $pathToTheSymlink to $theSymlinkDestination."
 }
 
+# function fail_fast_copy_files_required_for_a_working_installation_to() {
+#     local fullPathToInstallDirectory="$1"
 
-function fail_fast_copy_files_required_for_a_working_installation_to() {
-    local fullPathToInstallDirectory="$1"
+#     local -a __rsync__=(
+#         rsync
+#         --archive
+#         --verbose
+#         --filter="merge ${__REPO_DIR__}/install-scripts/filter-list-for-install"
+#     )
 
-    local -a __rsync__=(
-        rsync
-        --archive
-        --verbose
-        --filter="merge ${__REPO_DIR__}/install-scripts/filter-list-for-install"
-    )
+#     is_dry_run && __rsync__+=("--dry-run")
 
-    is_dry_run && __rsync__+=("--dry-run")
+#     __rsync__+=("$__REPO_DIR__/")
+#     __rsync__+=("$fullPathToInstallDirectory")
 
-    __rsync__+=("$__REPO_DIR__/")
-    __rsync__+=("$fullPathToInstallDirectory")
+#     dry_echo "$(tell_user_that_we_are_about_to_run_rsync_with "${__rsync__[@]}")"
 
-    dry_echo "$(tell_user_that_we_are_about_to_run_rsync_with "${__rsync__[@]}")"
+#     "${__rsync__[@]}"
+#     local exitCode=$?
+#     (( exitCode != 0 )) && abort "Fatal error from rsync."
 
-    "${__rsync__[@]}"
-    local exitCode=$?
-    (( exitCode != 0 )) && abort "Fatal error from rsync."
+#     true
+# }
 
-    true
-}
+# function tell_user_that_we_are_about_to_run_rsync_with() {
+#     local -a __rsync__=("$@")
 
-function tell_user_that_we_are_about_to_run_rsync_with() {
-    local -a __rsync__=("$@")
+#     echo
+#     _push_indent
+#         _indent
+#         echo -n "Running "
+#         echo "$(__ansi__ bright green)${__rsync__[0]} $(__ansi__ bright blue)${__rsync__[1]} ${__rsync__[2]}"
 
-    echo
-    _push_indent
-        _indent
-        echo -n "Running "
-        echo "$(__ansi__ bright green)${__rsync__[0]} $(__ansi__ bright blue)${__rsync__[1]} ${__rsync__[2]}"
+#         for arg in "${__rsync__[@]:3}"; do
+#             theColor='cyan'; [[ "$arg" == "--dry-run" ]] && theColor='red'
+#             _indent && echo "              $(__ansi__ bright $theColor)$arg"
+#         done
+#     _pop_indent
 
-        for arg in "${__rsync__[@]:3}"; do
-            theColor='cyan'; [[ "$arg" == "--dry-run" ]] && theColor='red'
-            _indent && echo "              $(__ansi__ bright $theColor)$arg"
-        done
-    _pop_indent
-
-    __ansi__ reset
-}
+#     __ansi__ reset
+# }

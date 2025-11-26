@@ -19,7 +19,7 @@ done
 unset __library__
 
 # Sane defaults
-DEFAULT_INSTALL_DIRECTORY="$HOME/.bash_session_scripts"
+DEFAULT_INSTALL_DIRECTORY="$__REPO_DIR__"
 
 # Setup/shutdown environment
 function start() {
@@ -41,46 +41,48 @@ function start() {
 # Parses command line before calling main
 declare -A ENCOUNTERED_COMMANDS
 function parse_command_line_args_and_call_main() {
-    local installDirectory="$DEFAULT_INSTALL_DIRECTORY"
 
     while [[ "$#" -gt 0 ]]; do
         cmd="$1"
         shift
 
         if [[ "${ENCOUNTERED_COMMANDS[$cmd]}" ]]; then
-            case "$cmd" in
-                --to)
-                    __ansi__ reset
-                    echo -n "Install directory was already set to: "
-                    echo    "$(__ansi__ bright blue)$installDirectory"
-                    __ansi__ reset
-                    echo -n "Cannot set install directory with the "
-                    echo -n "$(__ansi__ bright blue)--to "
-                    echo    "$(__ansi__ reset)subcommand more than once."
-                    return 1
-                    ;;
-                *)
-                    continue
-                    ;;
-            esac
+            continue
+            # case "$cmd" in
+            #     --to)
+            #         __ansi__ reset
+            #         echo -n "Install directory was already set to: "
+            #         echo    "$(__ansi__ bright blue)$installDirectory"
+            #         __ansi__ reset
+            #         echo -n "Cannot set install directory with the "
+            #         echo -n "$(__ansi__ bright blue)--to "
+            #         echo    "$(__ansi__ reset)subcommand more than once."
+            #         return 1
+            #         ;;
+            #     *)
+            #         continue
+            #         ;;
+            # esac
         else
             ENCOUNTERED_COMMANDS[$cmd]='true'
         fi
 
         case "$cmd" in
-            --to)
-                case "$1" in
-                    --*) installDirectory=''            ;;    # Never allow any files starting with -- for simplicity of handling early switches.
-                    *)   installDirectory="$1" && shift ;;
-                esac
-                ;;
-
-
             --dry-run) enable_dry_run                                ;;
             --help)    display_installer_help "$0"       && return 0 ;;
             *)         abort "Unrecognized command: $cmd"            ;;
+
+            # --to)
+            #     case "$1" in
+            #         --*) installDirectory=''            ;;    # Never allow any files starting with -- for simplicity of handling early switches.
+            #         *)   installDirectory="$1" && shift ;;
+            #     esac
+            #     ;;
+
         esac
     done
+
+    local installDirectory="$__REPO_DIR__"
 
     [[ ! "$installDirectory" ]] && abort "No install directory provided."
 
@@ -143,10 +145,25 @@ function tell_user_we_would_be_changing_the_working_directory_to() {
 }
 
 function __realpath() {
-    realpath --canonicalize-missing "$@"
+    # realpath --canonicalize-missing "$@"
+
+    [ $# -eq 0 ] && return 1
+
+    case "$1" in
+        /*) dir=$(dirname -- "$1")      ;;
+        *)  dir=$(dirname -- "$PWD/$1") ;;
+    esac
+
+    base=$(basename -- "$1")
+
+    (
+        # Try to cd into the directory; if it doesn't exist, stay put
+        cd "$dir" 2>/dev/null || :
+        printf '%s/%s\n' "$(pwd -P)" "$base"
+    )
 }
 
-function __cd() {
+function __cd__() {
     local destinationDirectory
 
     [[ ! "$1" ]] && return 1
@@ -163,13 +180,16 @@ function __cd() {
     [[ ! "$destinationDirectory"        ]] && return 1
     [[   "$destinationDirectory" != "/" ]] && destinationDirectory="${destinationDirectory%/}"
 
-    dry_echo "$(__ansi__ bright blue)Would cd to $(__ansi__ bright yellow)$destinationDirectory$(__ansi__ reset)"
-
     if is_dry_run; then
         CURRENT_WORKING_DIRECTORY="$destinationDirectory"
     else
         cd "$destinationDirectory" && CURRENT_WORKING_DIRECTORY="$destinationDirectory"
     fi
+}
+
+function __cd() {
+
+    __cd__ "$1" # && dry_echo "$(__ansi__ bright blue)Would cd to $(__ansi__ bright yellow)$destinationDirectory$(__ansi__ reset)"
 }
 
 function __pwd() {

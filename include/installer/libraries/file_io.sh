@@ -73,7 +73,7 @@ function chdir_and_show() {
 function chdir_and_show_nocheck() {
     __cd "$1"
     local cdRetval=$?
-    if [[ $cdRetval -eq 0 ]]; then
+    if ! is_dry_run && [[ $cdRetval -eq 0 ]]; then
         echo -n "$(__ansi__ bright blue)Current working directory is now "
         echo -n "$(__ansi__ bright cyan)$1"
         echo    "$(__ansi__ bright blue)."

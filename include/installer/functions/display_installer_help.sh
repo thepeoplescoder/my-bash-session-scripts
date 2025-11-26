@@ -7,12 +7,13 @@ function display_installer_help() {
  
     local skip_a_line="<skip-a-line>"
 
-    local -a help_entries_display_order=("--help" "--dry-run" "$skip_a_line" "--to")
+    # local -a help_entries_display_order=("--help" "--dry-run" "$skip_a_line" "--to")
+    local -a help_entries_display_order=("--help" "--dry-run")
 
     local -A help_entries=(
         ["--help"]='help_entry_dash_dash_help'
         ["--dry-run"]='help_entry_dash_dash_dry_dash_run'
-        ["--to"]='help_entry_dash_dash_to'
+        # ["--to"]='help_entry_dash_dash_to'
     )
 
     local -a help_entry_dash_dash_help=(
@@ -21,11 +22,11 @@ function display_installer_help() {
     local -a help_entry_dash_dash_dry_dash_run=(
         "Performs a dry run.  No changes are made to your system."
     )
-    local -a help_entry_dash_dash_to=(
-        "Specifies the installation location, which is the argument that follows."
-        "$(__ansi__ bright red)If not provided, this location will default to:"
-        "    $(__ansi__ bright yellow)$DEFAULT_INSTALL_DIRECTORY$(__ansi__ reset)"
-    )
+    # local -a help_entry_dash_dash_to=(
+    #     "Specifies the installation location, which is the argument that follows."
+    #     "$(__ansi__ bright red)If not provided, this location will default to:"
+    #     "    $(__ansi__ bright yellow)$DEFAULT_INSTALL_DIRECTORY$(__ansi__ reset)"
+    # )
 
     local -a parts_of_the_command=(
         "$(__ansi__ bright white)$(basename "$scriptExecutable")"
