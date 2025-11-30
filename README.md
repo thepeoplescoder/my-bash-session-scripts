@@ -46,30 +46,23 @@ Most of everything you will need to get started will be located in `~/.bash_sess
    * 555-555-main
    * 999-999-final
 * bashrc.d
-   * 000-000-initial
+   * 000-000-pre-initial
+   * 001-000-initial
    * 555-555-main
    * 999-000-pre-final
    * 999-999-final
 
-On a new install, you will notice that `~/.bash_profile` does not source `~/.profile`, nor does it source `~/.bashrc`.  So first, we have to...
+On a new install, you will notice that `~/.bash_profile` sources both
+`~/.profile` and `~/.bashrc`.  This is because `~/.bash_session_scripts/bash_profile.d/`
+now contains the file that does the sourcing.  Users no longer have to perform
+the step of manually copying or symlinking the file to that location.
 
-### Make `~/.bash_profile` source `~/.profile` and `~/.bashrc`
-Fortunately, this is easy:
-1. Change to the `555-555-main` directory in `bash_profile.d`:
-   ```sh
-   cd ~/.bash_session_scripts/bash_profile.d/555-555-main/
-   ```
-2. From here, you can copy or symlink the files from the example directory.  Symlinking subscribes you to updates from the repository, but discourages editing.  Copying takes a snapshot of the current update, but allows you to edit the file without marking the repository as changed:
-   1. To copy:
-      ```sh
-      cp ../../examples/for/bash_profile.d/555-555-main/* .
-      ```
-   2. To symlink:
-      ```sh
-      ln -sf ../../examples/for/bash_profile.d/555-555-main/* .
-      ```
-3. Feel free to check the contents of the directory if you wish:
-   ```sh
-   ls -l
-   ```
-4. Subsequent login shells should now source `~/.bashrc`.
+### Windows/MSYS2 Users
+Make sure you have Developer mode turned on to enable symbolic links without
+needing to have Administrator access.  Then *copy* the file that enables native
+Windows symlinks in MSYS2:
+```bash
+cp ~/.bash_session_scripts/examples/for/bashrc.d/000-000-pre-initial/000-000-000-msys2-enable-native-windows-symlinks.sh ~/.bash_session_scripts/bashrc.d/000-000-pre-initial/
+```
+This ensures `$MSYS2` is set to `winsymlinks:nativestrict` and exports it, allowing
+symbolic links to be used everywhere else.
