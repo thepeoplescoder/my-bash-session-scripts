@@ -57,26 +57,6 @@ function unset_on_exit() {
 
 ###########################################################
 
-export __OS__="$(
-	case "$(uname -s)" in
-		Linux)          echo "linux"     ;;
-		*BSD|DragonFly) echo "bsd"       ;;
-		Darwin)         echo "macos"     ;;
-		CYGWIN*)        echo "cygwin"    ;;
-		MSYS*)          echo "msys2"     ;;
-		MINGW32*)       echo "mingw32"   ;;
-		MINGW64*)       echo "mingw64"   ;;
-		*)              echo "<unknown>" ;;
-	esac
-)"
-
-export __OS_IS_WINDOWS__="$(
-	case "$__OS__" in
-		cygwin|msys2|mingw32|mingw64) echo "true"  ;;
-		*)                            echo "false" ;;
-	esac
-)"
-
 ###########################################################
 
 unset_on_exit unset_on_exit

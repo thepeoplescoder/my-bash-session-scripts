@@ -36,6 +36,7 @@
 # It's fine because the function isn't called until it's defined.
 # It also defines unset_on_exit, which is used heavily.
 source "$(dirname "${BASH_SOURCE[0]}")/on_exit.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/init_phase_two.sh"
 
 source "$(dirname "${BASH_SOURCE[0]}")/initial_utility_functions_for_paths.sh"
 source "$(dirname "${BASH_SOURCE[0]}")/set___MY_INCLUDE_DIR__.sh"
