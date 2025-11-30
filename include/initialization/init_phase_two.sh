@@ -22,32 +22,32 @@ export __OS_IS_WINDOWS__="$(
 	esac
 )"
 
-function set_up_symlinks_for_windows_operating_systems() {
+function set_CYGWIN_or_MSYS2_for_windows_operating_systems() {
     unset -f "$FUNCNAME"
 
-    local symlinkFileName="$HOME/.windows_cygwin_msys2_options"
+    local optionsFile="$HOME/.windows_cygwin_msys2_options"
 
-    if ! $__OS_IS_WINDOWS__ || ! [[ -f "$symlinkFileName" ]]; then
+    if ! $__OS_IS_WINDOWS__ || ! [[ -f "$optionsFile" ]]; then
         return 1
     fi
 
-    local windowsSymlinks="$(cat "$symlinkFileName")"
+    local text="$(cat "$optionsFile")"
 
-    if [[ ! "$windowsSymlinks" ]]; then
+    if [[ ! "$text" ]]; then
         return 1
     fi
 
-    echo -n "Enabling native Windows symlinks via: "
+    echo -n "Executing: "
     case "$__OS__" in
         msys2|mingw32|mingw64) 
-            echo "export MSYS2=\"$windowsSymlinks\""
-            export MSYS2="$windowsSymlinks"
+            echo "export MSYS2=\"$text\""
+            export MSYS2="$text"
             ;;
         cygwin)
-            echo "export CYGWIN=\"$windowsSymlinks\""
-            export CYGWIN="$windowsSymlinks"
+            echo "export CYGWIN=\"$text\""
+            export CYGWIN="$text"
             ;;
     esac
 }
 
-set_up_symlinks_for_windows_operating_systems
+set_CYGWIN_or_MSYS2_for_windows_operating_systems
