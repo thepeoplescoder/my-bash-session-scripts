@@ -26,7 +26,7 @@ function start() {
     local initialPwd="$(pwd)"
 
     local firstNonExistentCommand="$(
-        find_first_match_of not_an_existing_command --in rsync realpath
+        find_first_match_of not_an_existing_command --in dirname basename
     )"
 
     [[ "$firstNonExistentCommand" ]] && echo "$firstNonExistentCommand command required." && return 1
