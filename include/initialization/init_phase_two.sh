@@ -1,3 +1,9 @@
+if [[ -v __INITIALIZATION_SLASH_INIT_PHASE_TWO_DOT_SH__ ]]; then
+	return 0
+fi
+
+__INITIALIZATION_SLASH_INIT_PHASE_TWO_DOT_SH__="$(get_this_file_name)"
+
 if [[ ! -v __OS__ ]]; then
     export __OS__="$(
         case "$(uname -s)" in
@@ -45,27 +51,6 @@ function set_CYGWIN_or_MSYS2_for_windows_operating_systems() {
     local value="$(<"$optionsFile")"
     echo "Executing: export $var=\"$value\""
     export "$var=$value"
-
-    # if [ "$__OS__" == "cygwin" && -v CYGWIN ]; then
-    #     echo "CYGWIN already set to $CYGWIN"
-    #     return 0
-    # elif [ -v MSYS2 ]; then
-    #     echo "MSYS2 already set to $MSYS2"
-    #     return 0
-    # fi
-
-    # local text="$(cat "$optionsFile")"
-
-    # case "$__OS__" in
-    #     msys2|mingw32|mingw64)
-    #         echo "Executing: export MSYS2=\"$text\""
-    #         export MSYS2="$text"
-    #         ;;
-    #     cygwin)
-    #         echo "Executing: export CYGWIN=\"$text\""
-    #         export CYGWIN="$text"
-    #         ;;
-    # esac
 }
 
 set_CYGWIN_or_MSYS2_for_windows_operating_systems
