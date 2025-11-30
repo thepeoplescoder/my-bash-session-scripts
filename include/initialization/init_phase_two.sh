@@ -43,11 +43,6 @@ function set_CYGWIN_or_MSYS2_for_windows_operating_systems() {
         *)                     return 1     ;;
     esac
 
-    if [[ -v $var ]]; then
-        __echo_if_not_logout "$var already set to ${!var}"
-        return 0
-    fi
-
     local value="$(<"$optionsFile")"
     __echo_if_not_logout "Executing: export $var=\"$value\""
     export "$var=$value"
