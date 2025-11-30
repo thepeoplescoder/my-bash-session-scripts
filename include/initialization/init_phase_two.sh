@@ -44,13 +44,19 @@ function set_CYGWIN_or_MSYS2_for_windows_operating_systems() {
     esac
 
     if [[ -v $var ]]; then
-        echo "$var already set to ${!var}"
+        __echo_if_not_logout "$var already set to ${!var}"
         return 0
     fi
 
     local value="$(<"$optionsFile")"
-    echo "Executing: export $var=\"$value\""
+    __echo_if_not_logout "Executing: export $var=\"$value\""
     export "$var=$value"
+}
+
+unset_on_exit __echo_if_not_logout
+function __echo_if_not_logout() {
+    [ -v __MY_BASH_LOGOUT__ ] && return 1
+    echo "$@"
 }
 
 set_CYGWIN_or_MSYS2_for_windows_operating_systems
