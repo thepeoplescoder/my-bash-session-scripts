@@ -4,11 +4,11 @@ unset_on_exit CURRENT_DIRECTORY_COLOR
 unset_on_exit PROMPT_COLOR PROMPT_TERMINATOR
 unset_on_exit PS1_RESET_TERMINAL
 
-BRACKET_COLOR=$(__unprintable__ $(__ansi__ color blue))
-USERNAME_COLOR=$(__unprintable__ $(__ansi__ bright blue))
-AT_COLOR=$(__unprintable__ $(__ansi__ color cyan))
+BRACKET_COLOR=$(__unprintable__ $(__ansi__ bright blue))
+USERNAME_COLOR=$(__unprintable__ $(__ansi__ color cyan))
+AT_COLOR=$(__unprintable__ $(__ansi__ bright cyan))
 HOSTNAME_COLOR=$USERNAME_COLOR
-CURRENT_DIRECTORY_COLOR=$(__unprintable__ $(__ansi__ bright cyan))
+CURRENT_DIRECTORY_COLOR=$(__unprintable__ $(__ansi__ bright white))
 PROMPT_COLOR=$BRACKET_COLOR
 PS1_RESET_TERMINAL=$(__unprintable__ $(__ansi__ reset))
 PROMPT_TERMINATOR='$'
