@@ -133,27 +133,3 @@ function nondestructively_dispose_of_old_name_and_make_new_symlink_in_home_direc
     $isCopyNeeded && _pop_indent
     echo
 }
-
-# function make_a_backup_of_this_file_in_the_same_directory_using_our_rotator() {
-#     local fullPathToOriginalFile="$(get_full_path_without_expanding_symlinks "$1")"
-
-#     local workingDirectory="$(dirname "$fullPathToOriginalFile")"
-#     local basenameOfFile="$(basename "$fullPathToOriginalFile")"
-
-#     local fullPathToBackupFile="$workingDirectory/$(find_rotation_target "$basenameOfFile" 999)"
-
-#     local originalFileDisplayable="$(get_displayable_path "$fullPathToOriginalFile")"
-#     local backupFileDisplayable="$(get_displayable_path "$fullPathToBackupFile")"
-
-#     _indent
-#     echo -n "$(__ansi__ bright green)Copying "
-#     echo -n "$(__ansi__ bright yellow)$originalFileDisplayable "
-#     echo -n "$(__ansi__ bright green)to "
-#     echo -n "$(__ansi__ bright yellow)$backupFileDisplayable"
-#     echo    "$(__ansi__ bright green)..."
-#     _push_indent
-#         _indent && with_post_delay cp --verbose "$fullPathToOriginalFile" "$fullPathToBackupFile"
-#     _pop_indent
-# }
-
-

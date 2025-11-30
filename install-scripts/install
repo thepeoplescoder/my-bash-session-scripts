@@ -18,7 +18,13 @@ do
 done
 unset __library__
 
-# Sane defaults
+# All installs go to this directory.
+#
+# I used to give the user more power by having the necessary
+# files be copied to whatever location the user wished to install
+# these files to, but that added unnecessary complexity to the install
+# script.  If the user wants to install to a custom location, then
+# clone the repository to a custom location instead.
 DEFAULT_INSTALL_DIRECTORY="$__REPO_DIR__"
 
 # Setup/shutdown environment
@@ -29,7 +35,10 @@ function start() {
         find_first_match_of not_an_existing_command --in dirname basename
     )"
 
-    [[ "$firstNonExistentCommand" ]] && echo "$firstNonExistentCommand command required." && return 1
+    if [[ "$firstNonExistentCommand" ]]; then
+        echo "$firstNonExistentCommand command required."
+        return 1
+    fi
 
     parse_command_line_args_and_call_main "$@"
     local retval=$?
@@ -48,21 +57,6 @@ function parse_command_line_args_and_call_main() {
 
         if [[ "${ENCOUNTERED_COMMANDS[$cmd]}" ]]; then
             continue
-            # case "$cmd" in
-            #     --to)
-            #         __ansi__ reset
-            #         echo -n "Install directory was already set to: "
-            #         echo    "$(__ansi__ bright blue)$installDirectory"
-            #         __ansi__ reset
-            #         echo -n "Cannot set install directory with the "
-            #         echo -n "$(__ansi__ bright blue)--to "
-            #         echo    "$(__ansi__ reset)subcommand more than once."
-            #         return 1
-            #         ;;
-            #     *)
-            #         continue
-            #         ;;
-            # esac
         else
             ENCOUNTERED_COMMANDS[$cmd]='true'
         fi
@@ -71,14 +65,6 @@ function parse_command_line_args_and_call_main() {
             --dry-run) enable_dry_run                                ;;
             --help)    display_installer_help "$0"       && return 0 ;;
             *)         abort "Unrecognized command: $cmd"            ;;
-
-            # --to)
-            #     case "$1" in
-            #         --*) installDirectory=''            ;;    # Never allow any files starting with -- for simplicity of handling early switches.
-            #         *)   installDirectory="$1" && shift ;;
-            #     esac
-            #     ;;
-
         esac
     done
 
@@ -146,7 +132,6 @@ function tell_user_we_would_be_changing_the_working_directory_to() {
 
 function __realpath() {
     # realpath --canonicalize-missing "$@"
-
     [ $# -eq 0 ] && return 1
 
     case "$1" in
