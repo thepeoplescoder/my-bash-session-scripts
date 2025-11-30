@@ -57,12 +57,12 @@ On a new install, you will notice that `~/.bash_profile` sources both
 now contains the file that does the sourcing.  Users no longer have to perform
 the step of manually copying or symlinking the file to that location.
 
-### Windows/MSYS2 Users
+### Windows Users Running Cygwin/MSYS2 - Enabling Symlinks
 Make sure you have Developer mode turned on to enable symbolic links without
-needing to have Administrator access.  Then *copy* the file that enables native
-Windows symlinks in MSYS2:
-```bash
-cp ~/.bash_session_scripts/examples/for/bashrc.d/000-000-pre-initial/000-000-000-msys2-enable-native-windows-symlinks.sh ~/.bash_session_scripts/bashrc.d/000-000-pre-initial/
+needing to have Administrator access.  Then make sure `~/.windows_cygwin_msys2_options` exists
+and contains the text
 ```
-This ensures `$MSYS2` is set to `winsymlinks:nativestrict` and exports it, allowing
-symbolic links to be used everywhere else.
+winsymlinks:nativestrict
+```
+Any text in `~/.windows_cygwin_msys2_options` will be used as the value for `$MSYS` or `$CYGWIN`
+as appropriate, as your environment is detected on shell startup.

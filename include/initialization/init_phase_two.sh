@@ -38,7 +38,7 @@ function set_CYGWIN_or_MSYS2_for_windows_operating_systems() {
 
     local var
     case "$__OS__" in
-        msys2|mingw32|mingw64) var="MSYS2"  ;;
+        msys2|mingw32|mingw64) var="MSYS"   ;;
         cygwin)                var="CYGWIN" ;;
         *)                     return 1     ;;
     esac
