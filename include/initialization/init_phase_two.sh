@@ -26,35 +26,46 @@ function set_CYGWIN_or_MSYS2_for_windows_operating_systems() {
     unset -f "$FUNCNAME"
 
     local optionsFile="$HOME/.windows_cygwin_msys2_options"
-
     if ! $__OS_IS_WINDOWS__ || ! [[ -f "$optionsFile" ]]; then
         return 1
     fi
 
-    local text="$(cat "$optionsFile")"
+    local var
+    case "$__OS__" in
+        msys2|mingw32|mingw64) var="MSYS2"  ;;
+        cygwin)                var="CYGWIN" ;;
+        *)                     return 1     ;;
+    esac
 
-    if [[ ! "$text" ]]; then
-        return 1
+    if [[ -v $var ]]; then
+        echo "$var already set to ${!var}"
+        return 0
     fi
 
-    case "$__OS__" in
-        msys2|mingw32|mingw64)
-            if [ -v MSYS2 ]; then
-                echo "MSYS2 already set to $MSYS2"
-            else
-                echo "Executing: export MSYS2=\"$text\""
-                export MSYS2="$text"
-            fi
-            ;;
-        cygwin)
-            if [ -v CYGWIN ]; then
-                echo "CYGWIN already set to $CYGWIN"
-            else
-                echo "Executing: export CYGWIN=\"$text\""
-                export CYGWIN="$text"
-            fi
-            ;;
-    esac
+    local value="$(<"$optionsFile")"
+    echo "Executing: export $var=\"$value\""
+    export "$var=$value"
+
+    # if [ "$__OS__" == "cygwin" && -v CYGWIN ]; then
+    #     echo "CYGWIN already set to $CYGWIN"
+    #     return 0
+    # elif [ -v MSYS2 ]; then
+    #     echo "MSYS2 already set to $MSYS2"
+    #     return 0
+    # fi
+
+    # local text="$(cat "$optionsFile")"
+
+    # case "$__OS__" in
+    #     msys2|mingw32|mingw64)
+    #         echo "Executing: export MSYS2=\"$text\""
+    #         export MSYS2="$text"
+    #         ;;
+    #     cygwin)
+    #         echo "Executing: export CYGWIN=\"$text\""
+    #         export CYGWIN="$text"
+    #         ;;
+    # esac
 }
 
 set_CYGWIN_or_MSYS2_for_windows_operating_systems
