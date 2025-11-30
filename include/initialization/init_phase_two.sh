@@ -4,29 +4,25 @@ fi
 
 __INITIALIZATION_SLASH_INIT_PHASE_TWO_DOT_SH__="$(get_this_file_name)"
 
-if [[ ! -v __OS__ ]]; then
-    export __OS__="$(
-        case "$(uname -s)" in
-            Linux)          echo "linux"     ;;
-            *BSD|DragonFly) echo "bsd"       ;;
-            Darwin)         echo "macos"     ;;
-            CYGWIN*)        echo "cygwin"    ;;
-            MSYS*)          echo "msys2"     ;;
-            MINGW32*)       echo "mingw32"   ;;
-            MINGW64*)       echo "mingw64"   ;;
-            *)              echo "<unknown>" ;;
-        esac
-    )"
-fi
+export __OS__="$(
+    case "$(uname -s)" in
+        Linux)          echo "linux"     ;;
+        *BSD|DragonFly) echo "bsd"       ;;
+        Darwin)         echo "macos"     ;;
+        CYGWIN*)        echo "cygwin"    ;;
+        MSYS*)          echo "msys2"     ;;
+        MINGW32*)       echo "mingw32"   ;;
+        MINGW64*)       echo "mingw64"   ;;
+        *)              echo "<unknown>" ;;
+    esac
+)"
 
-if [[ ! -v __OS_IS_WINDOWS__ ]]; then
-    export __OS_IS_WINDOWS__="$(
-        case "$__OS__" in
-            cygwin|msys2|mingw32|mingw64) echo "true"  ;;
-            *)                            echo "false" ;;
-        esac
-    )"
-fi
+export __OS_IS_WINDOWS__="$(
+    case "$__OS__" in
+        cygwin|msys2|mingw32|mingw64) echo "true"  ;;
+        *)                            echo "false" ;;
+    esac
+)"
 
 function set_CYGWIN_or_MSYS2_for_windows_operating_systems() {
     unset -f "$FUNCNAME"
