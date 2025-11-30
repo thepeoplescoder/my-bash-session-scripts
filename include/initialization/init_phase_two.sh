@@ -40,8 +40,8 @@ function set_CYGWIN_or_MSYS2_for_windows_operating_systems() {
     esac
 
     local value="$(<"$optionsFile")"
-    __echo_if_not_logout "Executing: export $var=\"$value\""
     export "$var=$value"
+    __echo_if_not_logout "$var is now $value"
 }
 
 unset_on_exit __echo_if_not_logout
