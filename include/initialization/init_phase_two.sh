@@ -4,44 +4,62 @@ fi
 
 __INITIALIZATION_SLASH_INIT_PHASE_TWO_DOT_SH__="$(get_this_file_name)"
 
-export __OS__="$(
-    case "$(uname -s)" in
-        Linux)          echo "linux"     ;;
-        *BSD|DragonFly) echo "bsd"       ;;
-        Darwin)         echo "macos"     ;;
-        CYGWIN*)        echo "cygwin"    ;;
-        MSYS*)          echo "msys2"     ;;
-        MINGW32*)       echo "mingw32"   ;;
-        MINGW64*)       echo "mingw64"   ;;
-        *)              echo "<unknown>" ;;
-    esac
-)"
+if [ ! -v __OS__ ]; then
+    export __OS__="$(
+        case "$(uname -s)" in
+            Linux)          echo "linux"     ;;
+            *BSD|DragonFly) echo "bsd"       ;;
+            Darwin)         echo "macos"     ;;
+            CYGWIN*)        echo "cygwin"    ;;
+            MSYS*)          echo "msys2"     ;;
+            MINGW32*)       echo "mingw32"   ;;
+            MINGW64*)       echo "mingw64"   ;;
+            *)              echo "<unknown>" ;;
+        esac
+    )"
+fi
 
-export __OS_IS_WINDOWS__="$(
-    case "$__OS__" in
-        cygwin|msys2|mingw32|mingw64) echo "true"  ;;
-        *)                            echo "false" ;;
-    esac
-)"
+if [ ! -v __OS_IS_WINDOWS__ ]; then
+    export __OS_IS_WINDOWS__="$(
+        case "$__OS__" in
+            cygwin|msys2|mingw32|mingw64) echo "true"  ;;
+            *)                            echo "false" ;;
+        esac
+    )"
+fi
 
 function set_CYGWIN_or_MSYS2_for_windows_operating_systems() {
     unset -f "$FUNCNAME"
 
-    local optionsFile="$HOME/.windows_cygwin_msys2_options"
-    if ! $__OS_IS_WINDOWS__ || ! [[ -f "$optionsFile" ]]; then
-        return 1
-    fi
+    ! $__OS_IS_WINDOWS__ && return 1
 
     local var
     case "$__OS__" in
-        msys2|mingw32|mingw64) var="MSYS"   ;;
-        cygwin)                var="CYGWIN" ;;
-        *)                     return 1     ;;
+        cygwin) var="CYGWIN" ;;
+        *)      var="MSYS"   ;;
     esac
 
-    local value="$(<"$optionsFile")"
-    export "$var=$value"
-    __echo_if_not_logout "$var is now $value"
+    if [ -v "$var" ]; then
+        return 0
+    fi
+
+    local -a validOptionsFileNames=(
+        "$HOME/.windows_cygwin_msys2_options"
+        "$HOME/.windows_cygwin_msys2_env"
+    )
+
+    local optionsFile
+    for optionsFile in "${validOptionsFileNames[@]}"; do
+        [[ -f "$optionsFile" ]] && break
+        optionsFile=''
+    done
+
+    [ ! "$optionsFile" ] && return 1
+
+    local contentsOfOptionsFile="$(<"$optionsFile")"
+
+    export "$var=$contentsOfOptionsFile"
+    __echo_if_not_logout "$var is now $contentsOfOptionsFile"
 }
 
 unset_on_exit __echo_if_not_logout
