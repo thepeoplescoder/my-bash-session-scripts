@@ -22,7 +22,7 @@ function create_this_file_if_it_does_not_exist() {
 function set_LS_COLORS_using_this_file {
 	unset -f "$FUNCNAME"
 	eval "$("$__dircolorsCommand" "$1")"
-	[[ "$__OS__" == "bsd" ]] && command_exists "opendircolors" && eval "$(opendircolors -b "$1")"
+	[[ "$__PLATFORM__" == "bsd" ]] && command_exists "opendircolors" && eval "$(opendircolors -b "$1")"
 }
 
 __main__

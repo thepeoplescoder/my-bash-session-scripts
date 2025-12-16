@@ -4,8 +4,8 @@ fi
 
 __INITIALIZATION_SLASH_INIT_PHASE_TWO_DOT_SH__="$(get_this_file_name)"
 
-if [ ! -v __OS__ ]; then
-    export __OS__="$(
+if [ ! -v __PLATFORM__ ]; then
+    export __PLATFORM__="$(
         case "$(uname -s)" in
             Linux)          echo "linux"     ;;
             *BSD|DragonFly) echo "bsd"       ;;
@@ -19,9 +19,9 @@ if [ ! -v __OS__ ]; then
     )"
 fi
 
-if [ ! -v __OS_IS_WINDOWS__ ]; then
-    export __OS_IS_WINDOWS__="$(
-        case "$__OS__" in
+if [ ! -v __PLATFORM_IS_WINDOWS__ ]; then
+    export __PLATFORM_IS_WINDOWS__="$(
+        case "$__PLATFORM__" in
             cygwin|msys2|mingw32|mingw64) echo "true"  ;;
             *)                            echo "false" ;;
         esac
@@ -31,10 +31,10 @@ fi
 function set_CYGWIN_or_MSYS2_for_windows_operating_systems() {
     unset -f "$FUNCNAME"
 
-    ! $__OS_IS_WINDOWS__ && return 1
+    ! $__PLATFORM_IS_WINDOWS__ && return 1
 
     local var
-    case "$__OS__" in
+    case "$__PLATFORM__" in
         cygwin) var="CYGWIN" ;;
         *)      var="MSYS"   ;;
     esac

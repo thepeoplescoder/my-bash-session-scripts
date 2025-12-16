@@ -1,8 +1,8 @@
 # alias ls='LC_COLLATE=C ls --group-directories-first --color=auto '
 alias ls="$(
-    case "$__OS__" in
-        linux) echo "LC_COLLATE=C ls --group-directories-first --color=auto" ;;
-        *)     echo "LC_COLLATE=C ls --color=always"                         ;;
+    case "$__PLATFORM__" in
+        bsd|macos) echo "LC_COLLATE=C ls --color=always" ;;
+        *)         echo "LC_COLLATE=C ls --group-directories-first --color=auto" ;;
     esac
 )"
 alias grep='grep --color=auto '
