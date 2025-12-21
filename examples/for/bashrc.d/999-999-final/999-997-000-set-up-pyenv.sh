@@ -3,7 +3,12 @@ PYENV_ROOT="$HOME/.pyenv"
 unset_on_exit __pyEnvPath
 __pyEnvPath="$(command -v pyenv)"
 
-if [[ "$__pyEnvPath" == */pyenv-win/* ]]; then
+if ! $__PLATFORM_IS_WINDOWS__ && [[ "$__pyEnvPath" == */pyenv-win/* ]]; then
+    function pyenv() {
+        echo "It was detected that pyenv-win's pyenv is the default pyenv in your PATH."
+        echo "Please fix your PATH in a prior section, and ensure you have pyenv installed"
+        echo "if you wish to use it."
+    }
     unset PYENV_ROOT
     return 0
 
