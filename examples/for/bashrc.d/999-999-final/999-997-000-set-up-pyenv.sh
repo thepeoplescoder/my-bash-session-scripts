@@ -1,7 +1,15 @@
 PYENV_ROOT="$HOME/.pyenv"
 
-if command -v pyenv 1>/dev/null 2>&1; then
+unset_on_exit __pyEnvPath
+__pyEnvPath="$(command -v pyenv)"
+
+if [[ "$__pyEnvPath" == */pyenv-win/* ]]; then
+    unset PYENV_ROOT
+    return 0
+
+elif command -v pyenv 1>/dev/null 2>&1; then
     PYENV_ROOT=''
+
 elif is_a_directory "$PYENV_ROOT"; then
     prepend_to_PATH_if_it_exists "$PYENV_ROOT/bin"
 fi
