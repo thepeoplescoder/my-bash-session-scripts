@@ -6,8 +6,8 @@ function_template=$(
 cat <<'SHELL'
 function alias() {
     if [ $# -lt 1 ]; then
-        local pattern='^\(alias \)\([^=]*\)=\(.*\)$'
-        local replace="\\1{__COLOR1__}\\2{__RESET__}={__COLOR2__}\\3{__RESET__}"
+        local pattern='^\(alias\)[[:space:]]\+\([^=]*\)=\(.*\)$'
+        local replace='\1 {__COLOR1__}\2{__RESET__}={__COLOR2__}\3{__RESET__}'
         builtin alias | sed -e "s/$pattern/$replace/"
     else
         builtin alias "$@"
