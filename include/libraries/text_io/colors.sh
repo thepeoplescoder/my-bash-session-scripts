@@ -43,6 +43,10 @@ function __ansi__() {
 		reset)  __ansi__ color 0                      ;;
 		bright) __ansi__ color $(__color__ bright $1) ;;
 
+		# Text effects
+		bold)      echo -ne "\e[1m" ;;
+		underline) echo -ne "\e[4m" ;;
+
 		# Screen clearing
 		clear)            echo -ne "\e[2J\e[H" ;;
 		scrollback-clear) echo -ne "\e[3J"     ;;

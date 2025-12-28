@@ -18,7 +18,7 @@ SHELL
 
 function_body=$function_template
 function_body=${function_body//'{__RESET__}'/"$(__ansi__ reset)"}
-function_body=${function_body//'{__COLOR1__}'/'\x1b[1m'"$(__ansi__ bright magenta)"}
+function_body=${function_body//'{__COLOR1__}'/"$(__ansi__ bright magenta)"}
 function_body=${function_body//'{__COLOR2__}'/"$(__ansi__ color cyan)"}
 
 eval "$function_body"

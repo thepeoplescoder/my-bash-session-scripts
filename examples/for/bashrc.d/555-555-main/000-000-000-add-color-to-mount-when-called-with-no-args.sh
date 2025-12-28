@@ -25,7 +25,7 @@ SHELL
 
 function_body=$function_template
 function_body=${function_body//'{__RESET__}'/"$(__ansi__ reset)"}
-function_body=${function_body//'{__DEVICE__}'/'\x1b[1m'"$(__ansi__ bright magenta)"}
+function_body=${function_body//'{__DEVICE__}'/"$(__ansi__ bright magenta)"}
 function_body=${function_body//'{__MOUNT_POINT__}'/"$(__ansi__ color cyan)"}
 function_body=${function_body//'{__TYPE__}'/"$(__ansi__ bright yellow)"}
 function_body=${function_body//'{__OPTIONS__}'/"$(__ansi__ bright black)"}
