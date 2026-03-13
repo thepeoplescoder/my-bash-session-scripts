@@ -1,11 +1,11 @@
-export NVIM_DIR="$(
-	[ ! "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm"
+NVM_DIR=".nvm"
+export NVM_DIR="$(
+	[ -v XDG_CONFIG_HOME ] && echo "${XDG_CONFIG_HOME}/$NVM_DIR" || echo "${HOME}/$NVM_DIR"
 )"
 
-script="$NVM_DIR/nvm.sh"
-[ -s "$script" ] && source "$script"
-
-script="$NVM_DIR/bash_completion"
-[ -s "$script" ] && source "$script"
+for script in nvm.sh bash_completion; do
+	script="$NVM_DIR/$script"
+	[ -s "$script" ] && source "$script"
+done
 
 unset script
