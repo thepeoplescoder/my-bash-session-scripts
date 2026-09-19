@@ -1,27 +1,45 @@
-PYENV_ROOT="$HOME/.pyenv"
+$__PLATFORM_IS_WINDOWS__ && return 1
 
-unset_on_exit __pyEnvPath
-__pyEnvPath="$(command -v pyenv)"
+unset_on_exit __pyenv_found
+function __pyenv_found() {
+	command -v pyenv 1>/dev/null 2>&1
+}
 
-if ! $__PLATFORM_IS_WINDOWS__ && [[ "$__pyEnvPath" == */pyenv-win/* ]]; then
-    function pyenv() {
-        echo "It was detected that pyenv-win's pyenv is the default pyenv in your PATH."
-        echo "Please fix your PATH in a prior section, and ensure you have pyenv installed"
-        echo "if you wish to use it."
-    }
-    unset PYENV_ROOT
-    return 0
+unset_on_exit which_pyenv_found
+function __which_pyenv_found() {
+	if __pyenv_found; then
+		local p="$(command -v pyenv)"
+		if [[ "$p" == */pyenv-win/* ]]; then
+			echo "<PYENV-WIN>"
+		else
+			echo "$p"
+		fi
+	else
+		echo "<NONE>"
+	fi
+}
 
-elif command -v pyenv 1>/dev/null 2>&1; then
-    PYENV_ROOT=''
-
-elif is_a_directory "$PYENV_ROOT"; then
-    prepend_to_PATH_if_it_exists "$PYENV_ROOT/bin"
-fi
+case "$(__which_pyenv_found)" in
+	"<PYENV-WIN>")
+		function pyenv() {
+			echo "It was detected that pyenv-win's pyenv is the default pyenv in your PATH."
+			echo "Please fix your PATH in a prior section, and ensure you have pyenv installed"
+			echo "if you wish to use it."
+		}
+		return 1
+		;;
+	"<NONE>")
+		PYENV_ROOT="$HOME/.pyenv"
+		prepend_to_PATH_if_it_exists "$PYENV_ROOT/bin"
+		;;
+	*)
+		PYENV_ROOT=''
+		;;
+esac
 
 if ! command_exists 'pyenv'; then
-    unset PYENV_ROOT
-    return 0
+	unset PYENV_ROOT
+	return 1
 fi
 
 eval "$(pyenv init - bash)"
