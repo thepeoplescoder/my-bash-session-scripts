@@ -12,13 +12,20 @@ function __pyenv_found() {
 	command -v pyenv 1>/dev/null 2>&1
 }
 
+unset_on_exit is_pyenv_for_windows
+function is_pyenv_for_windows() {
+	"$(command -v pyenv)" help 2>&1 | grep -qiF "github.com/pyenv-win"
+}
+
+is_pyenv_for_windows=$(is_pyenv_for_windows && echo 'true' || echo 'false')
+
 unset_on_exit which_pyenv_found
 function __which_pyenv_found() {
 	if __pyenv_found; then
-		if "$(command -v pyenv)" help 2>&1 | grep -qiF "github.com/pyenv-win/"; then
+		if $is_pyenv_for_windows; then
 			echo "<PYENV-WIN>"
 		else
-			echo "$p"
+			command -v pyenv
 		fi
 	else
 		echo "<NONE>"
