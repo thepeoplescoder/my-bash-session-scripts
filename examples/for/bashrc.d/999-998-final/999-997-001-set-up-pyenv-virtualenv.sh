@@ -1,5 +1,2 @@
-if [ ! -v PYENV_ROOT ]; then
-    return 0
-fi
-
-eval "$(pyenv virtualenv-init -)"
+$__PLATFORM_IS_WINDOWS__ && return 1
+command_exists pyenv && eval "$(pyenv virtualenv-init -)"
