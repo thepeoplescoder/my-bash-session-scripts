@@ -9,6 +9,11 @@ function is_top_level_or_sourced() {
 	[[ ! "${FUNCNAME[2]:-}" || "${FUNCNAME[2]}" == "source" ]]
 }
 
+unset_on_exit is_wsl
+function is_wsl() {
+	grep -qi "wsl" /proc/sys/kernel/osrelease 2>/dev/null
+}
+
 unset_on_exit expect
 function expect() {
     local value="$1"
