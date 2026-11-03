@@ -11,11 +11,13 @@ HOSTNAME_COLOR=$USERNAME_COLOR
 CURRENT_DIRECTORY_COLOR=$(__unprintable__ $(__ansi__ bright white))
 PROMPT_COLOR=$BRACKET_COLOR
 PS1_RESET_TERMINAL=$(__unprintable__ $(__ansi__ reset))
-if is_root_user; then
-	PROMPT_TERMINATOR='#'
-else
-	PROMPT_TERMINATOR='$'
-fi
+# if is_root_user; then
+# 	PROMPT_TERMINATOR='#'
+# else
+# 	PROMPT_TERMINATOR='$'
+# fi
+
+PROMPT_TERMINATOR='\$'
 
 if is_root_user; then
 	USERNAME_COLOR="$USERNAME_COLOR$(__unprintable__ $(tput blink))"

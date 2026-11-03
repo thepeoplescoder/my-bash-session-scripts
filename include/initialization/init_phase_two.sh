@@ -2,6 +2,7 @@ if [[ -v __INITIALIZATION_SLASH_INIT_PHASE_TWO_DOT_SH__ ]]; then
 	return 0
 fi
 
+unset_on_exit __INITIALIZATION_SLASH_INIT_PHASE_TWO_DOT_SH__
 __INITIALIZATION_SLASH_INIT_PHASE_TWO_DOT_SH__="$(get_this_file_name)"
 
 if [ ! -v __PLATFORM__ ]; then

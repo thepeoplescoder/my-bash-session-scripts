@@ -20,9 +20,10 @@ function on_exit() {
 
 	[[ -v __MY_DOT_BASH_PROFILE__ && __on_exit__NUMBER_OF_CALLS -lt 2 ]] && return
 
+	_my_echo
+
 	unset -f "$FUNCNAME"
 	__run_cleanup__
-	echo
 
 	unset __on_exit__NUMBER_OF_CALLS
 	true

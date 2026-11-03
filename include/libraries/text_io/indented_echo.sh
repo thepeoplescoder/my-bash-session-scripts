@@ -15,7 +15,7 @@ unset_on_exit _indent
 function _indent() {
 	local i
 	for (( i=0; i<__iecho_INDENT; i++ )); do
-		echo -n "$__iecho_INDENT_STRING"
+		_my_echo -n "$__iecho_INDENT_STRING"
 	done
 }
 

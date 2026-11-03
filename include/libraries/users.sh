@@ -19,8 +19,8 @@ function is_root_user() {
 unset_on_exit __add_username_label_if_logged_in_as__
 function __add_username_label_if_logged_in_as__() {
     if [ "$USER" == "$1" ]; then
-        __ansi__ default
-        echo -n "($1) "
+        is_verbose && __ansi__ default
+        _my_echo -n "($1) "
     fi
     _indent
 }

@@ -2,6 +2,7 @@ if [[ -v __INITIALIZATION_SLASH_INITIAL_UTILITY_FUNCTIONS_DOT_SH__ ]]; then
 	return 0
 fi
 
+unset_on_exit __INITIALIZATION_SLASH_INITIAL_UTILITY_FUNCTIONS_DOT_SH__
 __INITIALIZATION_SLASH_INITIAL_UTILITY_FUNCTIONS_DOT_SH__="$(get_this_file_name)"
 
 unset_on_exit is_top_level_or_sourced
